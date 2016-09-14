@@ -1,4 +1,4 @@
-package utils;
+package ru.cells.icc.utils;
 
 import com.itextpdf.text.pdf.parser.GraphicsState;
 import com.itextpdf.text.pdf.parser.PathPaintingRenderInfo;

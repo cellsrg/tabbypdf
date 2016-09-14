@@ -1,4 +1,4 @@
-package utils;
+package ru.cells.icc.utils;
 
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
