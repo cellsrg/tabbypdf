@@ -10,18 +10,18 @@ import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
  */
 public class PdfParser {
 
-    private String path = "";
-    private PdfReader reader = null;
-    private PdfReaderContentParser parser = null;
+    private String                     path     = "";
+    private PdfReader                  reader   = null;
+    private PdfReaderContentParser     parser   = null;
     private MikhailovExtRenderListener strategy = null;
-    private PdfWriter writer = null;
-    private PdfStamper stamper = null;
+    private PdfWriter                  writer   = null;
+    private PdfStamper                 stamper  = null;
 
     public PdfParser(String path) {
         this.path = path;
     }
 
-    public boolean open(){
+    public boolean open() {
 
         return false;
     }

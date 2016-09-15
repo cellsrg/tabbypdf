@@ -16,21 +16,21 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
 
     public PathConstructionRenderInfo pathConstruction;
 
-    private ArrayList<Line> allLines = new ArrayList<Line>();
+    private ArrayList<Line> allLines      = new ArrayList<Line>();
     private ArrayList<Line> allTrashLines = new ArrayList<Line>();
 
-    private ArrayList<Rectangle> allRectangles = new ArrayList<Rectangle>();
+    private ArrayList<Rectangle> allRectangles      = new ArrayList<Rectangle>();
     private ArrayList<Rectangle> allTrashRectangles = new ArrayList<Rectangle>();
 
     private ArrayList<Rectangle> tmpRectangles = new ArrayList<Rectangle>();
-    private ArrayList<Line> tmpLines = new ArrayList<Line>();
+    private ArrayList<Line>      tmpLines      = new ArrayList<Line>();
 
     private Stack<PathConstructionRenderInfo> pathStack = new Stack<>();
 
     private static int TEXT_RENDER_MODE_INVISIBLE = 3;
 
-    private float x0 = 0;
-    private float y0 = 0;
+    private float         x0    = 0;
+    private float         y0    = 0;
     private GraphicsState curGs = null;
 
     private int rule;
@@ -40,54 +40,49 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
     public void modifyPath(PathConstructionRenderInfo renderInfo) {
         pathConstruction = renderInfo;
         pathStack.add(renderInfo);
-        AffineTransform af = new AffineTransform(
-                pathConstruction.getCtm().get(0),
-                pathConstruction.getCtm().get(3),
-                pathConstruction.getCtm().get(1),
-                pathConstruction.getCtm().get(4),
-                pathConstruction.getCtm().get(3),
-                pathConstruction.getCtm().get(5)
-        );
-        switch (pathConstruction.getOperation()){
-            case PathConstructionRenderInfo.MOVETO:{
+        AffineTransform af = new AffineTransform(pathConstruction.getCtm().get(0), pathConstruction.getCtm().get(3),
+                                                 pathConstruction.getCtm().get(1), pathConstruction.getCtm().get(4),
+                                                 pathConstruction.getCtm().get(3), pathConstruction.getCtm().get(5));
+        switch (pathConstruction.getOperation()) {
+            case PathConstructionRenderInfo.MOVETO: {
                 float x = pathConstruction.getSegmentData().get(0);
                 float y = pathConstruction.getSegmentData().get(1);
                 x = x + pathConstruction.getCtm().get(6);
                 y = y + pathConstruction.getCtm().get(7);
                 af.translate(x, y);
-                x0 = (float)af.getTranslateX();
-                y0 = (float)af.getTranslateY();
+                x0 = (float) af.getTranslateX();
+                y0 = (float) af.getTranslateY();
                 break;
             }
-            case PathConstructionRenderInfo.LINETO:{
+            case PathConstructionRenderInfo.LINETO: {
                 float x = pathConstruction.getSegmentData().get(0);
                 float y = pathConstruction.getSegmentData().get(1);
                 x += pathConstruction.getCtm().get(6);
                 y += pathConstruction.getCtm().get(7);
-                af.translate(x,y);
-                x = (float)af.getTranslateX();
-                y = (float)af.getTranslateY();
+                af.translate(x, y);
+                x = (float) af.getTranslateX();
+                y = (float) af.getTranslateY();
                 Line tmpLine = new Line(x0, y0, x, y);
                 x0 = x;
                 y0 = y;
                 tmpLines.add(tmpLine);
                 break;
             }
-            case PathConstructionRenderInfo.RECT:{
+            case PathConstructionRenderInfo.RECT: {
                 float x = pathConstruction.getSegmentData().get(0);
                 float y = pathConstruction.getSegmentData().get(1);
                 x += pathConstruction.getCtm().get(6);
                 y += pathConstruction.getCtm().get(7);
-                float width = pathConstruction.getSegmentData().get(2);
+                float width  = pathConstruction.getSegmentData().get(2);
                 float height = pathConstruction.getSegmentData().get(3);
                 width += pathConstruction.getCtm().get(6);
                 height += pathConstruction.getCtm().get(7);
                 af.translate(x, y);
-                x = (float)af.getTranslateX();
-                y = (float)af.getTranslateY();
-                af.translate(width,height);
-                width = (float)af.getTranslateX();
-                height = (float)af.getTranslateY();
+                x = (float) af.getTranslateX();
+                y = (float) af.getTranslateY();
+                af.translate(width, height);
+                width = (float) af.getTranslateX();
+                height = (float) af.getTranslateY();
                 Rectangle tmpRect = new Rectangle(x, y, width, height);
                 tmpRectangles.add(tmpRect);
                 break;
@@ -98,16 +93,10 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
     @Override
     public Path renderPath(PathPaintingRenderInfo renderInfo) {
         extList.add(renderInfo);
-        try {
-            curGs = ReflectionIText.getGs(renderInfo);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        curGs = ReflectionIText.getGs(renderInfo);
         this.rule = renderInfo.getOperation();
         pathStack.clear();
-        if (this.rule != 0){
+        if (this.rule != 0) {
             allLines.addAll(tmpLines);
             allRectangles.addAll(tmpRectangles);
         }
@@ -129,20 +118,14 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
     public void renderText(TextRenderInfo renderInfo) {
 
         AffineTransform af = null;
-        try {
-            af = new AffineTransform(
-                    ReflectionIText.getGs(renderInfo).getCtm().get(0),
-                    ReflectionIText.getGs(renderInfo).getCtm().get(3),
-                    ReflectionIText.getGs(renderInfo).getCtm().get(1),
-                    ReflectionIText.getGs(renderInfo).getCtm().get(4),
-                    ReflectionIText.getGs(renderInfo).getCtm().get(3),
-                    ReflectionIText.getGs(renderInfo).getCtm().get(5)
-            );
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+
+        af = new AffineTransform(ReflectionIText.getGs(renderInfo).getCtm().get(0),
+                                 ReflectionIText.getGs(renderInfo).getCtm().get(3),
+                                 ReflectionIText.getGs(renderInfo).getCtm().get(1),
+                                 ReflectionIText.getGs(renderInfo).getCtm().get(4),
+                                 ReflectionIText.getGs(renderInfo).getCtm().get(3),
+                                 ReflectionIText.getGs(renderInfo).getCtm().get(5));
+
 
         float x = renderInfo.getAscentLine().getStartPoint().get(0);
         float y = renderInfo.getAscentLine().getStartPoint().get(1);
@@ -174,8 +157,8 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
 
     }
 
-    public ArrayList<Line> getLines(){
-        for (Rectangle r: allRectangles){
+    public ArrayList<Line> getLines() {
+        for (Rectangle r : allRectangles) {
             allLines.add(new Line(r.getLeft(), r.getBottom(), r.getRight(), r.getBottom()));
             allLines.add(new Line(r.getLeft(), r.getTop(), r.getRight(), r.getTop()));
             allLines.add(new Line(r.getLeft(), r.getBottom(), r.getLeft(), r.getTop()));
@@ -184,15 +167,15 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
         return allLines;
     }
 
-    public ArrayList<Rectangle> getAllRectangles(){
+    public ArrayList<Rectangle> getAllRectangles() {
         return allRectangles;
     }
 
-    public ArrayList<Line> getTrashLines(){
+    public ArrayList<Line> getTrashLines() {
         return allTrashLines;
     }
 
-    public ArrayList<Rectangle> getAllTrashRectangles(){
+    public ArrayList<Rectangle> getAllTrashRectangles() {
         return allTrashRectangles;
     }
 }

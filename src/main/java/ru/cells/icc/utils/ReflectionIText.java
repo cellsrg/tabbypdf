@@ -11,18 +11,23 @@ import java.lang.reflect.Field;
  */
 public class ReflectionIText {
 
-    public static GraphicsState getGs(PathPaintingRenderInfo ri) throws NoSuchFieldException, IllegalAccessException {
-        Field f = ri.getClass().getDeclaredField("gs");
-        f.setAccessible(true);
-        GraphicsState r = (GraphicsState) f.get(ri);
-        return null;
+    public static GraphicsState getGs(PathPaintingRenderInfo ri) {
+        return getGsFrom(ri);
     }
 
-    public static GraphicsState getGs(TextRenderInfo ri) throws NoSuchFieldException, IllegalAccessException {
-        Field f = ri.getClass().getDeclaredField("gs");
-        f.setAccessible(true);
-        GraphicsState r = (GraphicsState) f.get(ri);
-        return null;
+    public static GraphicsState getGs(TextRenderInfo ri) {
+        return getGsFrom(ri);
+    }
+
+    private static GraphicsState getGsFrom(Object ri) {
+        try {
+            Field field = ri.getClass().getDeclaredField("gs");
+            field.setAccessible(true);
+            GraphicsState r = (GraphicsState) field.get(ri);
+            return r;
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
     }
 
 }
