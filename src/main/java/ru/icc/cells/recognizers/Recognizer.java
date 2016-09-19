@@ -1,4 +1,4 @@
-package ru.cells.icc.recognizers;
+package ru.icc.cells.recognizers;
 
 /**
  * Created by sunveil on 23/06/16.

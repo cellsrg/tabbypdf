@@ -1,9 +1,9 @@
-package ru.cells.icc.utils;
+package ru.icc.cells.utils;
 
 import com.itextpdf.awt.geom.Rectangle;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.parser.*;
-import ru.cells.icc.common.TextChunk;
+import ru.icc.cells.common.TextChunk;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,7 +135,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
 
     }
 
-    protected boolean isChunkAtSpace(TextChunk chunk, TextChunk previousChunk) {
+    private boolean isChunkAtSpace(TextChunk chunk, TextChunk previousChunk) {
         if (chunk == previousChunk) return false;
         float dist = chunk.distanceFromEndOf(previousChunk);
         float sp   = chunk.getCharSpaceWidth();

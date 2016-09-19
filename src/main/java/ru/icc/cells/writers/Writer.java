@@ -1,4 +1,4 @@
-package ru.cells.icc.writers;
+package ru.icc.cells.writers;
 
 /**
  * Created by sunveil on 23/06/16.

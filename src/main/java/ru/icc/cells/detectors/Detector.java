@@ -1,4 +1,4 @@
-package ru.cells.icc.detectors;
+package ru.icc.cells.detectors;
 
 /**
  * Created by sunveil on 23/06/16.

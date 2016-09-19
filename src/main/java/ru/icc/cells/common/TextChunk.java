@@ -1,4 +1,4 @@
-package ru.cells.icc.common;
+package ru.icc.cells.common;
 
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.pdf.DocumentFont;
