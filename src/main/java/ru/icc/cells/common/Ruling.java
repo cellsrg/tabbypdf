@@ -1,4 +1,4 @@
-package ru.cells.icc.common;
+package ru.icc.cells.common;
 
 /**
  * Created by sunveil on 27/06/16.

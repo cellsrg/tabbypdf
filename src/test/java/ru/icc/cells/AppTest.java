@@ -1,10 +1,10 @@
-package ru.cells.icc;
+package ru.icc.cells;
 
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import ru.cells.icc.utils.MikhailovTextExtractionStrategy;
+import ru.icc.cells.utils.MikhailovTextExtractionStrategy;
 
 import java.io.IOException;
 

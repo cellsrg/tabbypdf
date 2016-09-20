@@ -1,4 +1,4 @@
-package ru.cells.icc.common;
+package ru.icc.cells.common;
 
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.pdf.DocumentFont;
@@ -135,6 +135,7 @@ public class TextChunk extends Chunk implements Comparable<TextChunk> {
     }
 
 
+    @Override
     public int compareTo(TextChunk rhs) {
         if (this == rhs) return 0;
 

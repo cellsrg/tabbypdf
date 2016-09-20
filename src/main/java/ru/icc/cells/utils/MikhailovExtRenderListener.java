@@ -1,4 +1,4 @@
-package ru.cells.icc.utils;
+package ru.icc.cells.utils;
 
 import com.itextpdf.awt.geom.AffineTransform;
 import com.itextpdf.text.Rectangle;

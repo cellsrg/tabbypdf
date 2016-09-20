@@ -1,8 +1,7 @@
-package ru.cells.icc.utils;
+package ru.icc.cells.utils;
 
-import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.parser.*;
-import ru.cells.icc.common.TextChunk;
+import ru.icc.cells.common.TextChunk;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,15 +36,6 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         return locationalChunkResult;
     }
 
-    @Override
-    public void beginTextBlock() {
-    }
-
-    @Override
-    public void endTextBlock() {
-    }
-
-
     /**
      * Returns the result so far.
      *
@@ -54,6 +44,15 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
     @Override
     public String getResultantText() {
         return getResultantText(null);
+    }
+
+    @Override
+    public void beginTextBlock() {
+    }
+
+
+    @Override
+    public void endTextBlock() {
     }
 
     @Override
@@ -94,8 +93,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         location = new TextChunk(renderInfo.getText(), startLocation, endLocation, renderInfo.getSingleSpaceWidth());
         location.setRightTopPoint(rightTopPoint);
         GraphicsState gs   = ReflectionIText.getGs(renderInfo);
-        Font          font = new Font(gs.getFont(), gs.getFontSize(), gs.getFont().getFontType(), gs.getFillColor());
-        location.setFont(font);
+        location.setChunkFont(gs.getFont());
         return location;
     }
 
@@ -160,7 +158,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
             } else {
                 if (chunk.sameLine(lastChunk)) {
                     if (isChunkAtWordBoundary(chunk, lastChunk) && !startsWithSpace(chunk.getText()) &&
-                        !endsWithSpace(lastChunk.getText())) sb.append(' ');
+                            !endsWithSpace(lastChunk.getText())) sb.append(' ');
                     sb.append(chunk.getText());
                 } else {
                     sb.append('\n');
@@ -207,7 +205,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
     public ArrayList<TextChunk> getResultantWordLocation(TextChunkFilter chunkFilter) {
         locationalWordResult.clear();
         if (DUMP_STATE) dumpState();
-        List<TextChunk> chunks        = filterTextChunks(locationalChunkResult, chunkFilter);
+        List<TextChunk> chunks        = filterTextChunks(locationalResult, chunkFilter);
         Vector          start         = null;
         Vector          end           = null;
         TextChunk       previousChunk = null;
@@ -259,7 +257,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         return locationalWordResult;
     }
 
-        private void replaceSpecialChars(TextChunk chunk) {
+    private void replaceSpecialChars(TextChunk chunk) {
         if (chunk.getText().equals("¦")) {
             chunk.setText("");
         } else if (chunk.getText().equals("&")) {
