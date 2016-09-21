@@ -119,13 +119,8 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
 
         AffineTransform af = null;
 
-        af = new AffineTransform(ReflectionIText.getGs(renderInfo).getCtm().get(0),
-                                 ReflectionIText.getGs(renderInfo).getCtm().get(3),
-                                 ReflectionIText.getGs(renderInfo).getCtm().get(1),
-                                 ReflectionIText.getGs(renderInfo).getCtm().get(4),
-                                 ReflectionIText.getGs(renderInfo).getCtm().get(3),
-                                 ReflectionIText.getGs(renderInfo).getCtm().get(5));
-
+        Matrix ctm = ReflectionIText.getGs(renderInfo).getCtm();
+        af = new AffineTransform(ctm.get(0), ctm.get(3), ctm.get(1), ctm.get(4), ctm.get(3), ctm.get(5));
 
         float x = renderInfo.getAscentLine().getStartPoint().get(0);
         float y = renderInfo.getAscentLine().getStartPoint().get(1);
@@ -157,13 +152,13 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
 
     }
 
-    public ArrayList<Line> getLines() {
-        for (Rectangle r : allRectangles) {
-            allLines.add(new Line(r.getLeft(), r.getBottom(), r.getRight(), r.getBottom()));
-            allLines.add(new Line(r.getLeft(), r.getTop(), r.getRight(), r.getTop()));
-            allLines.add(new Line(r.getLeft(), r.getBottom(), r.getLeft(), r.getTop()));
-            allLines.add(new Line(r.getRight(), r.getBottom(), r.getRight(), r.getTop()));
-        }
+    public ArrayList<Line> getAllLines() {
+//        for (Rectangle r : allRectangles) {
+//            allLines.add(new Line(r.getLeft(), r.getBottom(), r.getRight(), r.getBottom()));
+//            allLines.add(new Line(r.getLeft(), r.getTop(), r.getRight(), r.getTop()));
+//            allLines.add(new Line(r.getLeft(), r.getBottom(), r.getLeft(), r.getTop()));
+//            allLines.add(new Line(r.getRight(), r.getBottom(), r.getRight(), r.getTop()));
+//        }
         return allLines;
     }
 
@@ -175,7 +170,7 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
         return allTrashLines;
     }
 
-    public ArrayList<Rectangle> getAllTrashRectangles() {
+    public ArrayList<Rectangle> getTrashRectangles() {
         return allTrashRectangles;
     }
 }
