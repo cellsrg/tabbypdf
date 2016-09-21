@@ -135,6 +135,7 @@ public class TextChunk extends Chunk implements Comparable<TextChunk> {
     }
 
 
+    @Override
     public int compareTo(TextChunk rhs) {
         if (this == rhs) return 0;
 

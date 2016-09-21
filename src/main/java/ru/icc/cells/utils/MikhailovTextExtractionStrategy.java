@@ -1,7 +1,5 @@
 package ru.icc.cells.utils;
 
-import com.itextpdf.awt.geom.Rectangle;
-import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.parser.*;
 import ru.icc.cells.common.TextChunk;
 
@@ -10,22 +8,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by sunveil on 27/06/16.
- */
 public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
 
-    static boolean DUMP_STATE = false;
+    private static boolean DUMP_STATE = false;
 
-    private final ArrayList<TextChunk> locationalResult = new ArrayList<TextChunk>();
+    private final ArrayList<TextChunk> locationalResult = new ArrayList<>();
 
-    private final ArrayList<TextChunk> locationalChunkResult = new ArrayList<TextChunk>();
+    private final ArrayList<TextChunk> locationalChunkResult = new ArrayList<>();
 
-    private final ArrayList<TextChunk> locationalJChunkResult = new ArrayList<TextChunk>();
-
-    private final ArrayList<TextChunk> locationalWordResult = new ArrayList<TextChunk>();
-
-    private final ArrayList<Rectangle> locationalTextBlocks = new ArrayList<Rectangle>();
+    private final ArrayList<TextChunk> locationalWordResult = new ArrayList<>();
 
     private ArrayList<Line> lines = null;
 
@@ -45,15 +36,6 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         return locationalChunkResult;
     }
 
-    @Override
-    public void beginTextBlock() {
-    }
-
-    @Override
-    public void endTextBlock() {
-    }
-
-
     /**
      * Returns the result so far.
      *
@@ -62,6 +44,15 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
     @Override
     public String getResultantText() {
         return getResultantText(null);
+    }
+
+    @Override
+    public void beginTextBlock() {
+    }
+
+
+    @Override
+    public void endTextBlock() {
     }
 
     @Override
@@ -102,13 +93,12 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         location = new TextChunk(renderInfo.getText(), startLocation, endLocation, renderInfo.getSingleSpaceWidth());
         location.setRightTopPoint(rightTopPoint);
         GraphicsState gs   = ReflectionIText.getGs(renderInfo);
-        Font          font = new Font(gs.getFont(), gs.getFontSize(), gs.getFont().getFontType(), gs.getFillColor());
-        location.setFont(font);
+        location.setChunkFont(gs.getFont());
         return location;
     }
 
     public interface TextChunkFilter {
-        public boolean accept(TextChunk textChunk);
+        boolean accept(TextChunk textChunk);
     }
 
     private boolean startsWithSpace(String str) {
@@ -139,7 +129,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         if (chunk == previousChunk) return false;
         float dist = chunk.distanceFromEndOf(previousChunk);
         float sp   = chunk.getCharSpaceWidth();
-        if (sp > 56) {// TODO: 15.09.2016 What is that magic constant? also below
+        if (sp > 56) {// TODO: 15.09.2016 What are that magic constants here and below?
             sp = sp / 5.0f;
         } else if (sp > 14) {
             sp += 1;
@@ -168,7 +158,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
             } else {
                 if (chunk.sameLine(lastChunk)) {
                     if (isChunkAtWordBoundary(chunk, lastChunk) && !startsWithSpace(chunk.getText()) &&
-                        !endsWithSpace(lastChunk.getText())) sb.append(' ');
+                            !endsWithSpace(lastChunk.getText())) sb.append(' ');
                     sb.append(chunk.getText());
                 } else {
                     sb.append('\n');
@@ -194,7 +184,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         return false;
     }
 
-    public boolean vSplit(TextChunk t1, TextChunk t2) {
+    private boolean vSplit(TextChunk t1, TextChunk t2) {
         if (rotation != 0) return false;
         if (lines != null) for (Line l : lines) {
             float x1   = (float) l.getBasePoints().get(0).getX();
@@ -213,104 +203,56 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
     }
 
     public ArrayList<TextChunk> getResultantWordLocation(TextChunkFilter chunkFilter) {
-
         locationalWordResult.clear();
         if (DUMP_STATE) dumpState();
-        List<TextChunk> filteredTextChunks = filterTextChunks(locationalChunkResult, chunkFilter);
-        Vector          start              = null;
-        Vector          end                = null;
-        boolean         isWord             = false;
-        StringBuffer    lr                 = new StringBuffer();
-        TextChunk       lastChunk          = null;
-        int             order              = 0;
-        TextChunk       tmpChunk           = null;
+        List<TextChunk> chunks        = filterTextChunks(locationalResult, chunkFilter);
+        Vector          start         = null;
+        Vector          end           = null;
+        TextChunk       previousChunk = null;
+        StringBuilder   lr            = new StringBuilder();
 
-        Font f = null;
-
-        for (TextChunk chunk : filteredTextChunks) {
-
+        for (TextChunk chunk : chunks) {
             replaceSpecialChars(chunk);
-
-            if (lastChunk == null) {
-                lastChunk = chunk;
+            if (previousChunk == null) {
+                previousChunk = chunk;
                 continue;
             }
-            if ((!isChunkAtSpace(chunk, lastChunk) || lastChunk.getText().equals("•")) && chunk.sameLine(lastChunk) &&
-                !vSplit(lastChunk, chunk)) {
-                if (!isWord) {
-                    if (!isEmptyChunk(lastChunk.getText())) {
-                        start = lastChunk.getStartLocation();
-                    } else {
-                        lr.append(chunk.getText());
-                        lastChunk = chunk;
-                        start = chunk.getStartLocation();
-                        continue;
-                    }
-                    if (!chunk.sameLine(lastChunk)) {
-                        start = chunk.getStartLocation();
-                        lr.append(chunk.getText());
-                        lastChunk = chunk;
-                        continue;
-                    }
-                    lr.append(lastChunk.getText());
-                    isWord = true;
-                } else {
-                    lr.append(lastChunk.getText());
-                    f = lastChunk.getFont();
-                    isWord = true;
-                }
-                end = chunk.getEndLocation();
-            } else {
-                if (lr.length() > 0) {
-                    lr.append(lastChunk.getText());
-                    f = lastChunk.getFont();
-                }
-                if (isWord) {
-                    isWord = false;
-                    tmpChunk = new TextChunk(lr.toString(), start, end, chunk.getCharSpaceWidth());
-                    tmpChunk.setOrder(order);
-                    tmpChunk.setRightTopPoint(lastChunk.getRightTopPoint());
-                    tmpChunk.setFont(lastChunk.getFont());
-                    locationalWordResult.add(tmpChunk);
-                    order++;
-                    lr.delete(0, lr.length());
-                } else if (!isEmptyChunk(lastChunk.getText())) {
-                    isWord = false;
-                    tmpChunk =
-                            new TextChunk(lastChunk.getText(), lastChunk.getStartLocation(), lastChunk.getEndLocation(),
-                                          chunk.getCharSpaceWidth());
-                    tmpChunk.setOrder(order);
-                    tmpChunk.setRightTopPoint(lastChunk.getRightTopPoint());
-                    tmpChunk.setFont(lastChunk.getFont());
-                    locationalWordResult.add(tmpChunk);
-                    order++;
-                }
-                if (chunk == filteredTextChunks.get(filteredTextChunks.size() - 1) &&
-                    !isEmptyChunk(lastChunk.getText())) {
-                    isWord = false;
-                    tmpChunk = new TextChunk(chunk.getText(), chunk.getStartLocation(), chunk.getEndLocation(),
-                                             chunk.getCharSpaceWidth());
-                    tmpChunk.setOrder(order);
-                    tmpChunk.setRightTopPoint(chunk.getRightTopPoint());
-                    tmpChunk.setFont(lastChunk.getFont());
-                    locationalWordResult.add(tmpChunk);
-                    order++;
-                }
-            }
-            if (!chunk.equals(" ")) {
-                lastChunk = chunk;
-            }
-        }
-        if (isWord) {
-            lr.append(lastChunk.getText());
-            tmpChunk = new TextChunk(lr.toString(), start, lastChunk.getEndLocation(), lastChunk.getCharSpaceWidth());
-            tmpChunk.setRightTopPoint(lastChunk.getRightTopPoint());
-            tmpChunk.setOrder(order);
-            tmpChunk.setFont(lastChunk.getFont());
-            if (clearChunk(tmpChunk)) {
-                locationalWordResult.add(tmpChunk);
+            if (start == null) {
+                if (previousChunk.getText().isEmpty()) continue;
+                start = previousChunk.getStartLocation();
             }
 
+            if ((!isChunkAtSpace(chunk, previousChunk) || previousChunk.getText().equals("•")) &&
+                    chunk.sameLine(previousChunk) &&
+                    !vSplit(previousChunk, chunk)) {
+                lr.append(previousChunk.getText());
+            } else {
+                end = previousChunk.getEndLocation();
+                lr.append(previousChunk.getText());
+                TextChunk newChunk = new TextChunk(lr.toString(), start, end, previousChunk.getCharSpaceWidth());
+                newChunk.setChunkFont(previousChunk.getChunkFont());
+                newChunk.setRightTopPoint(previousChunk.getRightTopPoint());
+                newChunk.setOrder(locationalWordResult.size());
+                locationalWordResult.add(newChunk);
+
+                start = null;
+                lr = new StringBuilder();
+            }
+            previousChunk = chunk;
+        }
+
+        TextChunk chunk = chunks.get(chunks.size() - 1);
+        if (start != null){
+            end = chunk.getEndLocation();
+            lr.append(chunk.getText());
+            TextChunk newChunk = new TextChunk(lr.toString(), start, end, previousChunk.getCharSpaceWidth());
+            newChunk.setChunkFont(chunk.getChunkFont());
+            newChunk.setRightTopPoint(chunk.getRightTopPoint());
+            newChunk.setOrder(locationalWordResult.size());
+            locationalWordResult.add(newChunk);
+        } else {
+            chunk.setOrder(locationalWordResult.size());
+            locationalWordResult.add(chunk);
         }
         return locationalWordResult;
     }
