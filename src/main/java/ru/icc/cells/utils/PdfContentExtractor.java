@@ -4,6 +4,7 @@ import com.itextpdf.awt.geom.Point2D;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
+import ru.icc.cells.common.Page;
 import ru.icc.cells.common.Ruling;
 import ru.icc.cells.common.TextChunk;
 
@@ -15,9 +16,18 @@ public class PdfContentExtractor {
     private PdfReader              reader;
     private PdfReaderContentParser parser;
 
+    public PdfContentExtractor(String path) throws IOException {
+        this.reader = new PdfReader(path);
+        this.parser = new PdfReaderContentParser(reader);
+    }
+
     public PdfContentExtractor(PdfReader reader) {
         this.reader = reader;
         this.parser = new PdfReaderContentParser(reader);
+    }
+
+    public Page getPageContent(int pageNumber) throws IOException {
+        return new Page(getChunks(pageNumber), getRulings(pageNumber), pageNumber);
     }
 
     public List<TextChunk> getWordChunks(int pageNumber) throws IOException {
