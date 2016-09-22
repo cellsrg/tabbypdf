@@ -20,9 +20,10 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
 
     private ArrayList<Line> lines = null;
 
-    private int   rotation = 0;
+    private int rotation = 0;
 
-    private float width    = 0;
+    private float width = 0;
+
     public MikhailovTextExtractionStrategy(int rotation, float width) {
         this.rotation = rotation;
         this.width = width;
@@ -62,12 +63,18 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
 
     @Override
     public void renderText(TextRenderInfo renderInfo) {
-        renderInfo.getCharacterRenderInfos()
-                  .stream()//extract chunks per each character
-                  .filter(rI -> !rI.getText().isEmpty())
-                  .forEachOrdered(rI -> locationalResult.add(extractLocation(rI)));
+        renderInfo.getCharacterRenderInfos().stream()//extract chunks per each character
+                  .filter(rI -> !rI.getText().isEmpty()).forEachOrdered(rI -> {
+            locationalResult.add(extractLocation(rI));
+        });
+        for (int i = 0; i < locationalResult.size(); i++) {
+            locationalResult.get(i).setOrder(i);
+        }
 
         locationalChunkResult.add(extractLocation(renderInfo)); //extract chunk
+        for (int i = 0; i < locationalChunkResult.size(); i++) {
+            locationalChunkResult.get(i).setOrder(i);
+        }
     }
 
     private TextChunk extractLocation(TextRenderInfo renderInfo) {
@@ -92,7 +99,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         }
         location = new TextChunk(renderInfo.getText(), startLocation, endLocation, renderInfo.getSingleSpaceWidth());
         location.setRightTopPoint(rightTopPoint);
-        GraphicsState gs   = ReflectionIText.getGs(renderInfo);
+        GraphicsState gs = ReflectionIText.getGs(renderInfo);
         location.setChunkFont(gs.getFont());
         return location;
     }
@@ -158,7 +165,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
             } else {
                 if (chunk.sameLine(lastChunk)) {
                     if (isChunkAtWordBoundary(chunk, lastChunk) && !startsWithSpace(chunk.getText()) &&
-                            !endsWithSpace(lastChunk.getText())) sb.append(' ');
+                        !endsWithSpace(lastChunk.getText())) sb.append(' ');
                     sb.append(chunk.getText());
                 } else {
                     sb.append('\n');
@@ -223,8 +230,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
             }
 
             if ((!isChunkAtSpace(chunk, previousChunk) || previousChunk.getText().equals("•")) &&
-                    chunk.sameLine(previousChunk) &&
-                    !vSplit(previousChunk, chunk)) {
+                chunk.sameLine(previousChunk) && !vSplit(previousChunk, chunk)) {
                 lr.append(previousChunk.getText());
             } else {
                 end = previousChunk.getEndLocation();
@@ -242,7 +248,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         }
 
         TextChunk chunk = chunks.get(chunks.size() - 1);
-        if (start != null){
+        if (start != null) {
             end = chunk.getEndLocation();
             lr.append(chunk.getText());
             TextChunk newChunk = new TextChunk(lr.toString(), start, end, previousChunk.getCharSpaceWidth());
