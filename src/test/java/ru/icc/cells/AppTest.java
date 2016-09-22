@@ -1,11 +1,15 @@
 package ru.icc.cells;
 
-import com.itextpdf.text.pdf.PdfReader;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import ru.icc.cells.common.Page;
 import ru.icc.cells.common.TextChunk;
+import ru.icc.cells.debug.visual.PdfBoxWriter;
 import ru.icc.cells.utils.PdfContentExtractor;
 
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -23,6 +27,19 @@ public class AppTest extends TestCase {
             "src/test/resources/pdf/USDA_Tobacco_2005.12.pdf"
     };
 
+    private static final String[] SAVE_TEST_PDF_PATHS = {
+            "src/test/resources/pdf/edit/eu-009a.pdf",
+            "src/test/resources/pdf/edit/Japan_Agricultural_HB_2007.2.pdf",
+            "src/test/resources/pdf/edit/Japan_Agricultural_HB_2007.4.pdf",
+            "src/test/resources/pdf/edit/Japan_Agricultural_HB_2007.5.pdf",
+            "src/test/resources/pdf/edit/Japan_Science_HB_2007.5.pdf",
+            "src/test/resources/pdf/edit/us-004 2.pdf",
+            "src/test/resources/pdf/edit/us-028 3.pdf",
+            "src/test/resources/pdf/edit/us-031a 2.pdf",
+            "src/test/resources/pdf/edit/us-037.pdf",
+            "src/test/resources/pdf/edit/USDA_Tobacco_2005.12.pdf"
+    };
+
     public AppTest(String testName) {
         super(testName);
     }
@@ -35,11 +52,32 @@ public class AppTest extends TestCase {
         for (int i = 0; i < TEST_PDF_PATHS.length; i++) {
             String testPdfPath = TEST_PDF_PATHS[i];
             System.out.println(i + ") -------------------------------------------------------------------------------");
-            PdfReader                       reader       = new PdfReader(testPdfPath);
-            PdfContentExtractor pdfContentExtractor = new PdfContentExtractor(reader);
-            List<TextChunk>                 chunks       = pdfContentExtractor.getWordChunks(1);
+            PdfContentExtractor pdfContentExtractor = new PdfContentExtractor(testPdfPath);
+            List<TextChunk>     chunks              = pdfContentExtractor.getWordChunks(1);
             chunks.forEach(textChunk -> System.out.println(textChunk.getText()));
             assertFalse(chunks.isEmpty());
+        }
+    }
+
+    public void testPdfBoxWriterWorksCorrectly() throws IOException {
+        for (int pdfNumber = 0; pdfNumber < TEST_PDF_PATHS.length; pdfNumber++) {
+            PDDocument          document  = PDDocument.load(new File(TEST_PDF_PATHS[pdfNumber]));
+            PdfBoxWriter        writer    = new PdfBoxWriter(document);
+            PdfContentExtractor extractor = new PdfContentExtractor(TEST_PDF_PATHS[pdfNumber]);
+
+            for (int pageNumber = 0; pageNumber < document.getNumberOfPages(); pageNumber++) {
+                Page page = extractor.getPageContent(pageNumber + 1);
+                writer.setPage(pageNumber);
+                writer.setColor(Color.BLUE);
+                page.getRulings().forEach(writer::drawRuling);
+                writer.setShowChunkOrder(true);
+                writer.setColor(Color.ORANGE);
+                page.getChunks().forEach(writer::drawChunk);
+                writer.close();
+            }
+
+            document.save(SAVE_TEST_PDF_PATHS[pdfNumber]);
+            document.close();
         }
     }
 }
