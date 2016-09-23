@@ -3,8 +3,7 @@ package ru.icc.cells.debug.visual;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import ru.icc.cells.common.Ruling;
-import ru.icc.cells.common.TextChunk;
+import ru.icc.cells.common.*;
 
 import java.awt.*;
 import java.io.Closeable;
@@ -58,7 +57,7 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
     }
 
     @Override
-    public void drawChunk(TextChunk chunk) {
+    public <T extends ru.icc.cells.common.Rectangle & Orderable> void drawChunk(T chunk) {
         try {
             contentStream.addRect(chunk.getStartLocation().get(0), chunk.getStartLocation().get(1),
                                   Math.abs(chunk.getRightTopPoint().get(0) - chunk.getStartLocation().get(0)),
