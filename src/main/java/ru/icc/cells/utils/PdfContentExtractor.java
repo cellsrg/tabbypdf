@@ -26,6 +26,10 @@ public class PdfContentExtractor {
         this.parser = new PdfReaderContentParser(reader);
     }
 
+    public int getNumberOfPages() {
+        return reader.getNumberOfPages();
+    }
+
     public Page getPageContent(int pageNumber) throws IOException {
         return new Page(getChunks(pageNumber), getRulings(pageNumber), pageNumber);
     }
