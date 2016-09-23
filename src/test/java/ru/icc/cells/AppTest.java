@@ -72,7 +72,7 @@ public class AppTest extends TestCase {
                 page.getRulings().forEach(writer::drawRuling);
                 writer.setShowChunkOrder(true);
                 writer.setColor(Color.ORANGE);
-                page.getChunks().forEach(writer::drawChunk);
+                page.getOriginChunks().forEach(writer::drawChunk);
                 writer.close();
             }
 

@@ -31,7 +31,8 @@ public class PdfContentExtractor {
     }
 
     public Page getPageContent(int pageNumber) throws IOException {
-        return new Page(getChunks(pageNumber), getRulings(pageNumber), pageNumber);
+        return new Page(getChunks(pageNumber), getCharacterChunks(pageNumber), getWordChunks(pageNumber),
+                        getRulings(pageNumber));
     }
 
     public List<TextChunk> getWordChunks(int pageNumber) throws IOException {

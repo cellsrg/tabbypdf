@@ -31,7 +31,7 @@ public class Example {
                     writer.drawRuling(ruling);
                 }
                 writer.setColor(Color.ORANGE);
-                for (TextChunk chunk : page.getChunks()) {
+                for (TextChunk chunk : page.getOriginChunks()) {
                     writer.drawChunk(chunk);
                 }
             }
