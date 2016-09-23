@@ -1,25 +1,16 @@
 package ru.icc.cells.common;
 
-import com.itextpdf.text.Chunk;
 import com.itextpdf.text.pdf.DocumentFont;
 import com.itextpdf.text.pdf.parser.Vector;
 
 /**
  * Created by sunveil on 27/06/16.
  */
-public class TextChunk extends Chunk implements Comparable<TextChunk> {
+public class TextChunk extends Rectangle implements Comparable<TextChunk>, Orderable {
     /**
      * the text of the chunk
      */
     private       String       text;
-    /**
-     * the starting location of the chunk
-     */
-    private final Vector       startLocation;
-    /**
-     * the ending location of the chunk
-     */
-    private final Vector       endLocation;
     /**
      * unit vector in the orientation of the chunk
      */
@@ -45,7 +36,6 @@ public class TextChunk extends Chunk implements Comparable<TextChunk> {
      * the width of a single space character in the font of the chunk
      */
     private final float        charSpaceWidth;
-    private       Vector       rightTopPoint;
     private       int          order;
     private       DocumentFont font;
 
@@ -62,14 +52,12 @@ public class TextChunk extends Chunk implements Comparable<TextChunk> {
         this.rightTopPoint = rightTopPoint;
     }
 
-    public Vector getRightTopPoint() {
-        return rightTopPoint;
-    }
-
+    @Override
     public void setOrder(int order) {
         this.order = order;
     }
 
+    @Override
     public int getOrder() {
         return this.order;
     }
@@ -94,16 +82,6 @@ public class TextChunk extends Chunk implements Comparable<TextChunk> {
         distParallelStart = orientationVector.dot(startLocation);
         distParallelEnd = orientationVector.dot(endLocation);
     }
-
-
-    public Vector getStartLocation() {
-        return startLocation;
-    }
-
-    public Vector getEndLocation() {
-        return endLocation;
-    }
-
 
     public String getText() {
         return text;
