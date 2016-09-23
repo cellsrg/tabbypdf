@@ -230,7 +230,8 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
             }
 
             if ((!isChunkAtSpace(chunk, previousChunk) || previousChunk.getText().equals("•")) &&
-                chunk.sameLine(previousChunk) && !vSplit(previousChunk, chunk)) {
+                chunk.sameLine(previousChunk) && !vSplit(previousChunk, chunk) &&
+                !previousChunk.getText().equals(" ")) {
                 lr.append(previousChunk.getText());
             } else {
                 end = previousChunk.getEndLocation();
