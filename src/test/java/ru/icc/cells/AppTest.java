@@ -6,7 +6,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import ru.icc.cells.common.Page;
 import ru.icc.cells.common.TextChunk;
 import ru.icc.cells.debug.visual.PdfBoxWriter;
-import ru.icc.cells.utils.PdfContentExtractor;
+import ru.icc.cells.utils.content.PdfContentExtractor;
 
 import java.awt.*;
 import java.io.File;
@@ -72,7 +72,7 @@ public class AppTest extends TestCase {
                 page.getRulings().forEach(writer::drawRuling);
                 writer.setShowChunkOrder(true);
                 writer.setColor(Color.ORANGE);
-                page.getOriginChunks().forEach(writer::drawChunk);
+                page.getOriginChunks().forEach(writer::drawRect);
                 writer.close();
             }
 
