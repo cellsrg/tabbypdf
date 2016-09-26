@@ -57,17 +57,17 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
     }
 
     @Override
-    public <T extends ru.icc.cells.common.Rectangle & Orderable> void drawChunk(T chunk) {
+    public <T extends ru.icc.cells.common.Rectangle & Orderable> void drawRect(T rect) {
         try {
-            contentStream.addRect(chunk.getStartLocation().get(0), chunk.getStartLocation().get(1),
-                                  Math.abs(chunk.getRightTopPoint().get(0) - chunk.getStartLocation().get(0)),
-                                  Math.abs(chunk.getRightTopPoint().get(1) - chunk.getStartLocation().get(1)));
+            contentStream.addRect(rect.getStartLocation().get(0), rect.getStartLocation().get(1),
+                                  Math.abs(rect.getRightTopPoint().get(0) - rect.getStartLocation().get(0)),
+                                  Math.abs(rect.getRightTopPoint().get(1) - rect.getStartLocation().get(1)));
             contentStream.stroke();
             if (showChunkOrder) {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA, 8);
-                contentStream.newLineAtOffset(chunk.getStartLocation().get(0), chunk.getRightTopPoint().get(1));
-                contentStream.showText(String.valueOf(chunk.getOrder()));
+                contentStream.newLineAtOffset(rect.getStartLocation().get(0), rect.getRightTopPoint().get(1));
+                contentStream.showText(String.valueOf(rect.getOrder()));
                 contentStream.endText();
             }
         } catch (IOException e) {

@@ -11,7 +11,7 @@ import java.awt.*;
 public interface PdfWriter {
     void setColor(Color color);
 
-    <T extends ru.icc.cells.common.Rectangle & Orderable> void drawChunk(T chunk);
+    <T extends ru.icc.cells.common.Rectangle & Orderable> void drawRect(T rect);
 
     void drawRuling(Ruling ruling);
 }
