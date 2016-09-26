@@ -1,4 +1,4 @@
-package ru.icc.cells.utils;
+package ru.icc.cells.utils.content;
 
 import com.itextpdf.awt.geom.Point2D;
 import com.itextpdf.text.Rectangle;
