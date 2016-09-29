@@ -136,13 +136,28 @@ public class PageLayoutAlgorithm {
                 double yTopLeft = leftRulings.get(j).getEndLocation().getY();
                 double yBtmLeft = leftRulings.get(j).getStartLocation().getY();
                 if (xRight < xLeft && yTopRight == yTopLeft && yBtmRight == yBtmLeft) {
-                    Rectangle gap = new Rectangle((float) xRight, (float) yBtmRight,
-                                                  (float) leftRulings.get(j).getStartLocation().getX(),
-                                                  (float) yTopLeft);
-                    gaps.add(gap);
-                    rightRulings.remove(i--);
-                    leftRulings.remove(j);
-                    break;
+
+                    List<Ruling> allRulings = new ArrayList<>(leftRulings);
+                    allRulings.addAll(rightRulings);
+                    allRulings.remove(rightRulings.get(i));
+                    allRulings.remove(leftRulings.get(j));
+                    long count = allRulings.stream()
+                                           .filter(ruling -> (ruling.getStartLocation().getX() >= xRight &&
+                                                              ruling.getStartLocation().getX() <= xLeft) &&
+                                                             ((ruling.getStartLocation().getY() <= yTopLeft &&
+                                                               ruling.getStartLocation().getY() >= yBtmLeft) ||
+                                                              (ruling.getEndLocation().getY() <= yTopLeft &&
+                                                               ruling.getEndLocation().getY() >= yBtmLeft)))
+                                           .count();
+                    if (count == 0) {
+                        Rectangle gap = new Rectangle((float) xRight, (float) yBtmRight,
+                                                      (float) leftRulings.get(j).getStartLocation().getX(),
+                                                      (float) yTopLeft);
+                        gaps.add(gap);
+                        rightRulings.remove(i--);
+                        leftRulings.remove(j);
+                        break;
+                    }
                 }
             }
         }
