@@ -5,11 +5,13 @@ import ru.icc.cells.common.Page;
 import ru.icc.cells.common.TextBlock;
 import ru.icc.cells.debug.visual.PdfBoxWriter;
 import ru.icc.cells.utils.TextChunkProcessor;
+import ru.icc.cells.utils.content.PageLayoutAlgorithm;
 import ru.icc.cells.utils.content.PdfContentExtractor;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by Андрей on 23.09.2016.
@@ -53,13 +55,15 @@ public class Example {
                     Page page = extractor.getPageContent(pageNumber + 1);
 
                     TextChunkProcessor textChunkProcessor = new TextChunkProcessor(page);
-                    java.util.List<TextBlock> textBlocks     = textChunkProcessor.process();
+                    List<TextBlock>    textBlocks         = textChunkProcessor.process();
 
                     writer.setPage(pageNumber);
-                    writer.setColor(Color.BLUE);
-                    page.getRulings().forEach(writer::drawRuling);
                     writer.setColor(Color.ORANGE);
-                    textBlocks.forEach(writer::drawRect);
+                    textBlocks.forEach(writer::drawChunk);
+                    writer.setColor(Color.BLUE);
+                    PageLayoutAlgorithm.getHorizontalGaps(textBlocks).forEach(writer::drawRect);
+                    writer.setColor(Color.GREEN);
+                    PageLayoutAlgorithm.getVerticalGaps(textBlocks).forEach(writer::drawRect);
                 }
                 writer.close();
                 document.save(SAVE_TEST_PDF_PATHS[i]);
