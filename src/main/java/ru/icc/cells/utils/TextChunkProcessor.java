@@ -39,9 +39,21 @@ public class TextChunkProcessor {
     }
 
     private List<TextBlock> join(List<TextChunk> chunks) {
-        List<TextBlock> textBlocks = joinVerticalLines(joinHorizontalChunks(chunks));
-        normalize(textBlocks);
+        List<TextBlock> textBlocks = joinHorizontalChunks(chunks);
+        int diff = textBlocks.size();
+        while (diff!=0) {
+            diff = textBlocks.size();
+            textBlocks = joinHorizontalChunks(chunks);
+            diff = diff - textBlocks.size();
+        }
         textBlocks = joinVerticalLines(textBlocks);
+        normalize(textBlocks);
+        diff = textBlocks.size();
+        while (diff!=0) {
+            diff = textBlocks.size();
+            textBlocks = joinVerticalLines(textBlocks);
+            diff = diff - textBlocks.size();
+        }
 
         for (int i = 0; i < textBlocks.size(); i++) {
             textBlocks.get(i).setOrder(i);
