@@ -3,7 +3,9 @@ package ru.icc.cells.debug.visual;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import ru.icc.cells.common.*;
+import ru.icc.cells.common.Orderable;
+import ru.icc.cells.common.Rectangle;
+import ru.icc.cells.common.Ruling;
 
 import java.awt.*;
 import java.io.Closeable;
@@ -57,22 +59,45 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
     }
 
     @Override
-    public <T extends ru.icc.cells.common.Rectangle & Orderable> void drawRect(T rect) {
+    public void printText(String text, float x, float y) {
         try {
-            contentStream.addRect(rect.getStartLocation().get(0), rect.getStartLocation().get(1),
-                                  Math.abs(rect.getRightTopPoint().get(0) - rect.getStartLocation().get(0)),
-                                  Math.abs(rect.getRightTopPoint().get(1) - rect.getStartLocation().get(1)));
-            contentStream.stroke();
+            contentStream.beginText();
+            contentStream.newLineAtOffset(x, y);
+            contentStream.setFont(PDType1Font.HELVETICA, 8);
+            contentStream.showText(text);
+            contentStream.endText();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public <T extends ru.icc.cells.common.Rectangle & Orderable> void drawChunk(T chunk) {
+        try {
+            drawRect(chunk);
             if (showChunkOrder) {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA, 8);
-                contentStream.newLineAtOffset(rect.getStartLocation().get(0), rect.getRightTopPoint().get(1));
-                contentStream.showText(String.valueOf(rect.getOrder()));
+                contentStream.newLineAtOffset(chunk.getStartLocation().get(0), chunk.getRightTopPoint().get(1));
+                contentStream.showText(String.valueOf(chunk.getOrder()));
                 contentStream.endText();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public <T extends Rectangle> void drawRect(T rect) {
+        try {
+            contentStream.addRect(rect.getStartLocation().get(0), rect.getStartLocation().get(1),
+                                  Math.abs(rect.getRightTopPoint().get(0) - rect.getStartLocation().get(0)),
+                                  Math.abs(rect.getRightTopPoint().get(1) - rect.getStartLocation().get(1)));
+            contentStream.stroke();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
