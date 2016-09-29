@@ -10,6 +10,32 @@ public class Rectangle {
     protected Vector endLocation;
     protected Vector rightTopPoint;
 
+    public Rectangle() {
+        this(0, 0, 0, 0);
+    }
+
+    public Rectangle(float left, float bottom, float right, float top) {
+        this.setStartLocation(new Vector(left, bottom, 0));
+        this.setEndLocation(new Vector(right, bottom, 0));
+        this.setRightTopPoint(new Vector(right, top, 0));
+    }
+
+    public float getLeft() {
+        return startLocation.get(0);
+    }
+
+    public float getBottom() {
+        return startLocation.get(1);
+    }
+
+    public float getRight() {
+        return endLocation.get(0);
+    }
+
+    public float getTop() {
+        return rightTopPoint.get(1);
+    }
+
     public Vector getStartLocation() {
         return startLocation;
     }
