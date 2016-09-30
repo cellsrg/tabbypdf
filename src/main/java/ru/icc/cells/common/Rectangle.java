@@ -1,81 +1,73 @@
 package ru.icc.cells.common;
 
-import com.itextpdf.text.pdf.parser.Vector;
-
 /**
  * Created by Андрей on 23.09.2016.
  */
 public class Rectangle {
-    protected Vector startLocation;
-    protected Vector endLocation;
-    protected Vector rightTopPoint;
+//    protected Vector startLocation;
+//    protected Vector endLocation;
+//    protected Vector rightTopPoint;
+
+    private float left, bottom, right, top;
 
     public Rectangle() {
         this(0, 0, 0, 0);
     }
 
     public Rectangle(float left, float bottom, float right, float top) {
-        this.setStartLocation(new Vector(left, bottom, 0));
-        this.setEndLocation(new Vector(right, bottom, 0));
-        this.setRightTopPoint(new Vector(right, top, 0));
+//        this.setStartLocation(new Vector(left, bottom, 0));
+//        this.setEndLocation(new Vector(right, bottom, 0));
+//        this.setRightTopPoint(new Vector(right, top, 0));
+        this.left = left;
+        this.bottom = bottom;
+        this.right = right;
+        this.top = top;
     }
 
     public float getLeft() {
-        return startLocation.get(0);
+        return left;
     }
 
     public float getBottom() {
-        return startLocation.get(1);
+        return bottom;
     }
 
     public float getRight() {
-        return endLocation.get(0);
+        return right;
     }
 
     public float getTop() {
-        return rightTopPoint.get(1);
+        return top;
     }
 
-    public Vector getStartLocation() {
-        return startLocation;
+    public void setLeft(float left) {
+        this.left = left;
     }
 
-    public Vector getEndLocation() {
-        return endLocation;
+    public void setBottom(float bottom) {
+        this.bottom = bottom;
     }
 
-    public Vector getRightTopPoint() {
-        return rightTopPoint;
+    public void setRight(float right) {
+        this.right = right;
     }
 
-    public void setStartLocation(Vector startLocation) {
-        this.startLocation = startLocation;
-    }
-
-    public void setEndLocation(Vector endLocation) {
-        this.endLocation = endLocation;
-    }
-
-    public void setRightTopPoint(Vector rightTopPoint) {
-        this.rightTopPoint = rightTopPoint;
+    public void setTop(float top) {
+        this.top = top;
     }
 
     protected <T extends Rectangle> void join(T other) {
-        float left   = Float.min(this.startLocation.get(0), other.startLocation.get(0));
-        float right  = Float.max(this.rightTopPoint.get(0), other.rightTopPoint.get(0));
-        float top    = Float.max(this.rightTopPoint.get(1), other.rightTopPoint.get(1));
-        float bottom = Float.min(this.startLocation.get(1), other.startLocation.get(1));
-
-        this.startLocation = new Vector(left, bottom, this.startLocation.get(2));
-        this.endLocation = new Vector(right, bottom, this.endLocation.get(2));
-        this.rightTopPoint = new Vector(right, top, this.rightTopPoint.get(2));
+        left   = Float.min(this.left, other.getLeft());
+        bottom = Float.min(this.bottom, other.getBottom());
+        right  = Float.max(this.right, other.getRight());
+        top    = Float.max(this.top, other.getTop());
     }
 
     public <T extends Rectangle> boolean contains(T other) {
-        boolean left   = this.startLocation.get(0) <= other.startLocation.get(0);
-        boolean right  = this.rightTopPoint.get(0) >= other.rightTopPoint.get(0);
-        boolean top    = this.rightTopPoint.get(1) >= other.rightTopPoint.get(1);
-        boolean bottom = this.startLocation.get(1) <= other.startLocation.get(1);
+        boolean left   = this.left <= other.getLeft();
+        boolean right  = this.right >= other.getRight();
+        boolean top    = this.top >= other.getTop();
+        boolean bottom = this.bottom <= other.getBottom();
 
         return left && right && top && bottom;
     }

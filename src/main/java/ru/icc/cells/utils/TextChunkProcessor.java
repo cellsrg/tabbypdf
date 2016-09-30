@@ -104,12 +104,12 @@ public class TextChunkProcessor {
      * Checks whether firstRect is on the left of secondRect
      */
     private static <T extends Rectangle> boolean isHorizontalPositionValid(T firstRect, T secondRect) {
-        float lx1 = firstRect.getStartLocation().get(0);
-        float lx2 = secondRect.getStartLocation().get(0);
-        float ty1 = firstRect.getRightTopPoint().get(1);
-        float ty2 = secondRect.getRightTopPoint().get(1);
-        float by1 = firstRect.getStartLocation().get(1);
-        float by2 = secondRect.getStartLocation().get(1);
+        float lx1 = firstRect.getLeft();
+        float lx2 = secondRect.getLeft();
+        float ty1 = firstRect.getTop();
+        float ty2 = secondRect.getTop();
+        float by1 = firstRect.getBottom();
+        float by2 = secondRect.getBottom();
         return (lx1 <= lx2) && (ty1 >= by2) && (by1 <= ty2);
         //        return !(((rx1 > lx2) && (rx1 > rx2)) || (ty1 <= by2) || (by1 >= ty2));
     }
@@ -118,23 +118,23 @@ public class TextChunkProcessor {
      * Checks whether distance between chunks is less or equals than space width
      */
     private boolean isDistanceLessEqualsSpaceLength(TextChunk leftChunk, TextChunk rightChunk) {
-        if (leftChunk.getRightTopPoint().get(0) >= rightChunk.getStartLocation().get(0)) return true;
+        if (leftChunk.getRight() >= rightChunk.getLeft()) return true;
         /* Creating a chunk with only " " content and taking its width */
         float spaceWidth    = new Chunk(' ', new Font(leftChunk.getChunkFont())).getWidthPoint();
-        float chunkDistance = rightChunk.getStartLocation().get(0) - leftChunk.getRightTopPoint().get(0);
+        float chunkDistance = rightChunk.getLeft() - leftChunk.getRight();
         return chunkDistance <= spaceWidth * SPACE_WIDTH_MULTIPLIER;
     }
 
     private <T extends Rectangle> boolean isThereLinesBetweenChunks(T firstRect, T secondRect, boolean linesVertical) {
         return page.getRulings().stream().filter(line -> {
-            float   rx1 = firstRect.getRightTopPoint().get(0);
-            float   lx2 = secondRect.getStartLocation().get(0);
-            float   lx1 = firstRect.getStartLocation().get(0);
-            float   rx2 = secondRect.getRightTopPoint().get(0);
-            float   ty1 = firstRect.getRightTopPoint().get(1);
-            float   ty2 = secondRect.getRightTopPoint().get(1);
-            float   by1 = firstRect.getStartLocation().get(1);
-            float   by2 = secondRect.getStartLocation().get(1);
+            float   rx1 = firstRect.getRight();
+            float   lx2 = secondRect.getLeft();
+            float   lx1 = firstRect.getLeft();
+            float   rx2 = secondRect.getRight();
+            float   ty1 = firstRect.getTop();
+            float   ty2 = secondRect.getTop();
+            float   by1 = firstRect.getBottom();
+            float   by2 = secondRect.getBottom();
             double  lx  = Double.min(line.getStartLocation().getX(), line.getEndLocation().getX());
             double  rx  = Double.max(line.getStartLocation().getX(), line.getEndLocation().getX());
             double  by  = Double.min(line.getStartLocation().getY(), line.getEndLocation().getY());
@@ -174,7 +174,7 @@ public class TextChunkProcessor {
                 continue;
             }
             if (i + 2 < textLines.size() && isHorizontalPositionValid(secondChunk, textLines.get(i + 2)) &&
-                firstChunk.getRightTopPoint().get(0) >= textLines.get(i + 2).getStartLocation().get(0)) {
+                firstChunk.getRight() >= textLines.get(i + 2).getLeft()) {
                 result.add(textBlock);
                 textBlock = null;
                 continue;
@@ -200,13 +200,13 @@ public class TextChunkProcessor {
      * Checks whether firstRect is on the top of secondRect
      */
     private <T extends Rectangle> boolean isVerticalPositionValid(T firstRect, T secondRect) {
-        float lx1 = firstRect.getStartLocation().get(0);
-        float rx1 = firstRect.getRightTopPoint().get(0);
-        float lx2 = secondRect.getStartLocation().get(0);
-        float rx2 = secondRect.getRightTopPoint().get(0);
-        float ty1 = firstRect.getRightTopPoint().get(1);
-        float ty2 = secondRect.getRightTopPoint().get(1);
-        float by1 = firstRect.getStartLocation().get(1);
+        float lx1 = firstRect.getLeft();
+        float rx1 = firstRect.getRight();
+        float lx2 = secondRect.getLeft();
+        float rx2 = secondRect.getRight();
+        float ty1 = firstRect.getTop();
+        float ty2 = secondRect.getTop();
+        float by1 = firstRect.getBottom();
         return (rx1 >= lx2) && (lx1 <= rx2) && (ty1 >= ty2);
         //        return !((rx1 <= lx2) || (lx1 >= rx2) || (ty1 < ty2));
     }
@@ -215,11 +215,11 @@ public class TextChunkProcessor {
      * Checks whether distance between chunks is less or equals than height of secondRect
      */
     private <T extends Rectangle> boolean isDistanceLessEqualsHeight(T firstRect, T secondRect) {
-        float height = (float) (Math.abs(secondRect.getRightTopPoint().get(1) - secondRect.getStartLocation().get(1)) *
+        float height = (float) (Math.abs(secondRect.getTop() - secondRect.getBottom()) *
                                 HEIGHT_MULTIPLIER);
-        float distance = Math.abs(((firstRect.getRightTopPoint().get(1) > secondRect.getRightTopPoint().get(1)) ?
-                                   firstRect.getStartLocation().get(1) :
-                                   firstRect.getRightTopPoint().get(1)) - secondRect.getRightTopPoint().get(1));
+        float distance = Math.abs(((firstRect.getTop() > secondRect.getTop()) ?
+                                   firstRect.getBottom() :
+                                   firstRect.getTop()) - secondRect.getTop());
         return distance <= height;
     }
 
@@ -230,10 +230,8 @@ public class TextChunkProcessor {
                 Rectangle right = data.get(j);
                 if ((isHorizontalPositionValid(left, right) /*&& (isVerticalPositionValid(left, right)
                         && isDistanceLessEqualsHeight(left, right))*/) &&
-                    left.getRightTopPoint().get(0) >= right.getStartLocation().get(0)) {
-                    Vector newRight = new Vector(right.getStartLocation().get(0) - 5, left.getRightTopPoint().get(1),
-                                                 left.getRightTopPoint().get(2));
-                    left.setRightTopPoint(newRight);
+                    left.getRight() >= right.getLeft()) {
+                    left.setRight(right.getLeft() - 5);
                 }
             }
         }

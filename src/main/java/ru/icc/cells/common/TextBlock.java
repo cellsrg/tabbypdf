@@ -1,7 +1,5 @@
 package ru.icc.cells.common;
 
-import com.itextpdf.text.pdf.parser.Vector;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +11,10 @@ public class TextBlock extends Rectangle implements Orderable {
     private int order;
 
     public TextBlock() {
-        setStartLocation(new Vector(0, 0, 0));
-        setEndLocation(new Vector(0, 0, 0));
-        setRightTopPoint(new Vector(0, 0, 0));
+        setLeft(0);
+        setBottom(0);
+        setRight(0);
+        setTop(0);
     }
 
     private List<TextChunk> chunks = new ArrayList<>();
@@ -37,9 +36,10 @@ public class TextBlock extends Rectangle implements Orderable {
     @Override
     protected <T extends Rectangle> void join(T other) {
         if (isEmpty()) {
-            setStartLocation(other.startLocation);
-            setEndLocation(other.endLocation);
-            setRightTopPoint(other.rightTopPoint);
+            setLeft(other.getLeft());
+            setBottom(other.getBottom());
+            setRight(other.getRight());
+            setTop(other.getTop());
         } else {
             super.join(other);
         }

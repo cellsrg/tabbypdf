@@ -48,9 +48,6 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk>, Order
     }
 
 
-    public void setRightTopPoint(Vector rightTopPoint) {
-        this.rightTopPoint = rightTopPoint;
-    }
 
     @Override
     public void setOrder(int order) {
@@ -62,13 +59,15 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk>, Order
         return this.order;
     }
 
-    public TextChunk(String string, Vector startLocation, Vector endLocation, float charSpaceWidth) {
+    public TextChunk(String string, float left, float bottom, float right, float top, float charSpaceWidth) {
+        super(left, bottom, right, top);
         this.text = string;
-        this.startLocation = startLocation;
-        this.endLocation = endLocation;
         this.charSpaceWidth = charSpaceWidth;
 
-        Vector oVector = endLocation.subtract(startLocation);
+        Vector start   = new Vector(getLeft(), getBottom(), 0);
+        Vector end     = new Vector(getRight(), getBottom(), 0);
+        Vector oVector = end.subtract(start);
+                /*endLocation.subtract(startLocation);*/
         if (oVector.length() == 0) {
             oVector = new Vector(1, 0, 0);
         }
@@ -77,10 +76,10 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk>, Order
                 (int) (Math.atan2(orientationVector.get(Vector.I2), orientationVector.get(Vector.I1)) * 1000);
 
         Vector origin = new Vector(0, 0, 1);
-        distPerpendicular = (int) (startLocation.subtract(origin)).cross(orientationVector).get(Vector.I3);
+        distPerpendicular = (int) (start.subtract(origin)).cross(orientationVector).get(Vector.I3);
 
-        distParallelStart = orientationVector.dot(startLocation);
-        distParallelEnd = orientationVector.dot(endLocation);
+        distParallelStart = orientationVector.dot(start);
+        distParallelEnd = orientationVector.dot(end);
     }
 
     public String getText() {
@@ -92,7 +91,8 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk>, Order
     }
 
     public void printDiagnostics() {
-        System.out.println("Text (@" + startLocation + " -> " + endLocation + "): " + text);
+        System.out.println("Text (@" + getLeft() + "," + getBottom() + " -> " +
+                           getRight() + "," + getBottom() + "): " + text);
         System.out.println("orientationMagnitude: " + orientationMagnitude);
         System.out.println("distPerpendicular: " + distPerpendicular);
         System.out.println("distParallel: " + distParallelStart);
@@ -105,7 +105,7 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk>, Order
     }
 
     public boolean sameLine2(TextChunk as) {
-        return getStartLocation().get(1) == as.getStartLocation().get(1);
+        return getBottom() == as.getBottom();
     }
 
     public float distanceFromEndOf(TextChunk other) {

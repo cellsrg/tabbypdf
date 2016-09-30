@@ -78,7 +78,7 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
             if (showChunkOrder) {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA, 8);
-                contentStream.newLineAtOffset(chunk.getStartLocation().get(0), chunk.getRightTopPoint().get(1));
+                contentStream.newLineAtOffset(chunk.getLeft(), chunk.getTop());
                 contentStream.showText(String.valueOf(chunk.getOrder()));
                 contentStream.endText();
             }
@@ -90,9 +90,9 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
     @Override
     public <T extends Rectangle> void drawRect(T rect) {
         try {
-            contentStream.addRect(rect.getStartLocation().get(0), rect.getStartLocation().get(1),
-                                  Math.abs(rect.getRightTopPoint().get(0) - rect.getStartLocation().get(0)),
-                                  Math.abs(rect.getRightTopPoint().get(1) - rect.getStartLocation().get(1)));
+            contentStream.addRect(rect.getLeft(), rect.getBottom(),
+                                  Math.abs(rect.getRight() - rect.getLeft()),
+                                  Math.abs(rect.getTop() - rect.getBottom()));
             contentStream.stroke();
         } catch (IOException e) {
             e.printStackTrace();

@@ -87,18 +87,19 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
             topSegment = topSegment.transformBy(riseOffsetTransform);
         }
         TextChunk location;
-        Vector    startLocation, endLocation, rightTopPoint;
+        float left, bottom, right, top;
         if (rotation == 90) {  //transform chunk coordinates according to rotation angle
-            startLocation = new Vector(btmSegment.getStartPoint().get(1), width - btmSegment.getStartPoint().get(0), 0);
-            endLocation = new Vector(btmSegment.getEndPoint().get(1), width - btmSegment.getEndPoint().get(0), 0);
-            rightTopPoint = new Vector(topSegment.getEndPoint().get(1), width - topSegment.getEndPoint().get(0), 0);
+            left = btmSegment.getStartPoint().get(1);
+            bottom = width - btmSegment.getStartPoint().get(0);
+            right = topSegment.getEndPoint().get(1);
+            top = width - topSegment.getEndPoint().get(0);
         } else {
-            startLocation = btmSegment.getStartPoint();
-            endLocation = btmSegment.getEndPoint();
-            rightTopPoint = topSegment.getEndPoint();
+            left = btmSegment.getStartPoint().get(0);
+            bottom = btmSegment.getStartPoint().get(1);
+            right = topSegment.getEndPoint().get(0);
+            top = topSegment.getEndPoint().get(1);
         }
-        location = new TextChunk(renderInfo.getText(), startLocation, endLocation, renderInfo.getSingleSpaceWidth());
-        location.setRightTopPoint(rightTopPoint);
+        location = new TextChunk(renderInfo.getText(), left, bottom, right, top, renderInfo.getSingleSpaceWidth());
         GraphicsState gs = ReflectionIText.getGs(renderInfo);
         location.setChunkFont(gs.getFont());
         return location;
@@ -196,10 +197,10 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         if (lines != null) for (Line l : lines) {
             float x1   = (float) l.getBasePoints().get(0).getX();
             float x2   = (float) l.getBasePoints().get(1).getX();
-            float t1x  = t1.getEndLocation().get(0);
-            float t2x  = t2.getStartLocation().get(0);
-            float t1y1 = t1.getRightTopPoint().get(1);
-            float t1y2 = t1.getStartLocation().get(1);
+            float t1x  = t1.getRight();
+            float t2x  = t2.getLeft();
+            float t1y1 = t1.getTop();
+            float t1y2 = t1.getBottom();
             float y1   = (float) Math.max(l.getBasePoints().get(0).getY(), (float) l.getBasePoints().get(1).getY());
             float y2   = (float) Math.min(l.getBasePoints().get(0).getY(), (float) l.getBasePoints().get(1).getY());
             if (x1 == x2 && (t1x <= x1) && (t2x >= x2) && (Math.min(t1y1, y1) - Math.max(t1y2, y2)) > 0) {
@@ -213,8 +214,10 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         locationalWordResult.clear();
         if (DUMP_STATE) dumpState();
         List<TextChunk> chunks        = filterTextChunks(locationalResult, chunkFilter);
-        Vector          start         = null;
-        Vector          end           = null;
+        Float           left          = null;
+        Float           bottom        = null;
+        Float           right        = null;
+        Float           top        = null;
         TextChunk       previousChunk = null;
         StringBuilder   lr            = new StringBuilder();
 
@@ -224,9 +227,11 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
                 previousChunk = chunk;
                 continue;
             }
-            if (start == null) {
+            if (left == null || bottom == null) {
                 if (previousChunk.getText().isEmpty()) continue;
-                start = previousChunk.getStartLocation();
+                left = previousChunk.getLeft();
+                bottom = previousChunk.getBottom();
+//                start = previousChunk.getStartLocation();
             }
 
             if ((!isChunkAtSpace(chunk, previousChunk) || previousChunk.getText().equals("•")) &&
@@ -234,27 +239,30 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
                 !previousChunk.getText().equals(" ")) {
                 lr.append(previousChunk.getText());
             } else {
-                end = previousChunk.getEndLocation();
+                right = previousChunk.getRight();
+                top = previousChunk.getTop();
                 lr.append(previousChunk.getText());
-                TextChunk newChunk = new TextChunk(lr.toString(), start, end, previousChunk.getCharSpaceWidth());
+                TextChunk newChunk = new TextChunk(lr.toString(), left, bottom, right, top, previousChunk.getCharSpaceWidth());
                 newChunk.setChunkFont(previousChunk.getChunkFont());
-                newChunk.setRightTopPoint(previousChunk.getRightTopPoint());
                 newChunk.setOrder(locationalWordResult.size());
                 locationalWordResult.add(newChunk);
 
-                start = null;
+                left = null;
+                bottom = null;
                 lr = new StringBuilder();
             }
             previousChunk = chunk;
         }
 
         TextChunk chunk = chunks.get(chunks.size() - 1);
-        if (start != null) {
-            end = chunk.getEndLocation();
+        if (left != null && bottom != null) {
+            right = chunk.getRight();
+            top = chunk.getTop();
+
             lr.append(chunk.getText());
-            TextChunk newChunk = new TextChunk(lr.toString(), start, end, previousChunk.getCharSpaceWidth());
+//            TextChunk newChunk = new TextChunk(lr.toString(), start, end, previousChunk.getCharSpaceWidth());
+            TextChunk newChunk = new TextChunk(lr.toString(), left, bottom, right, top, previousChunk.getCharSpaceWidth());
             newChunk.setChunkFont(chunk.getChunkFont());
-            newChunk.setRightTopPoint(chunk.getRightTopPoint());
             newChunk.setOrder(locationalWordResult.size());
             locationalWordResult.add(newChunk);
         } else {
