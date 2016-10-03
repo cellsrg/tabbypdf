@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * Created by Андрей on 26.09.2016.
  */
 public class PageLayoutAlgorithm {
-    private static Comparator<Rectangle> rectangleComparator = (rect1, rect2) -> {
+    public static Comparator<Rectangle> RECTANGLE_COMPARATOR = (rect1, rect2) -> {
         if (rect1.getTop() > rect2.getTop()) {
             return -1;
         } else if (rect1.getTop() == rect2.getTop()) {
@@ -77,34 +77,34 @@ public class PageLayoutAlgorithm {
         r.add(rTop);
         r.addAll(obstacles);
         r.add(rBtm);
-        r.sort(rectangleComparator);
+        r.sort(RECTANGLE_COMPARATOR);
 
         List<Ruling> leftRulings  = new ArrayList<>();
         List<Ruling> rightRulings = new ArrayList<>();
         for (int i = 1; i < r.size() - 1; i++) {
             Float yTopLeft = null, yTopRight = null, yBtmLeft = null, yBtmRight = null;
             for (int j = i - 1; j >= 0; j--) {
-                if (r.get(i).getTop() < r.get(j).getBottom()) {
-                    if (yTopLeft == null && r.get(j).getLeft() < r.get(i).getLeft() &&
-                        r.get(i).getLeft() < r.get(j).getRight()) {
+                if (r.get(i).getTop() <= r.get(j).getBottom()) {
+                    if (yTopLeft == null && r.get(j).getLeft() <= r.get(i).getLeft() &&
+                        r.get(i).getLeft() <= r.get(j).getRight()) {
                         yTopLeft = r.get(j).getBottom();
                     }
-                    if (yTopRight == null && r.get(j).getLeft() < r.get(i).getRight() &&
-                        r.get(i).getRight() < r.get(j).getRight()) {
+                    if (yTopRight == null && r.get(j).getLeft() <= r.get(i).getRight() &&
+                        r.get(i).getRight() <= r.get(j).getRight()) {
                         yTopRight = r.get(j).getBottom();
                     }
                     if (yTopLeft != null && yTopRight != null) break;
                 }
             }
             for (int j = i + 1; j < r.size(); j++) {
-                if (r.get(i).getBottom() > r.get(j).getTop()) {
-                    if (yBtmLeft == null && r.get(j).getLeft() < r.get(i).getLeft() &&
-                        r.get(i).getLeft() < r.get(j).getRight()) {
+                if (r.get(i).getBottom() >= r.get(j).getTop()) {
+                    if (yBtmLeft == null && r.get(j).getLeft() <= r.get(i).getLeft() &&
+                        r.get(i).getLeft() <= r.get(j).getRight()) {
                         yBtmLeft = r.get(j).getTop();
                     }
                 }
-                if (yBtmRight == null && r.get(j).getLeft() < r.get(i).getRight() &&
-                    r.get(i).getRight() < r.get(j).getRight()) {
+                if (yBtmRight == null && r.get(j).getLeft() <= r.get(i).getRight() &&
+                    r.get(i).getRight() <= r.get(j).getRight()) {
                     yBtmRight = r.get(j).getTop();
                 }
                 if (yBtmLeft != null && yBtmRight != null) break;
@@ -149,10 +149,10 @@ public class PageLayoutAlgorithm {
                                                               (ruling.getEndLocation().getY() <= yTopLeft &&
                                                                ruling.getEndLocation().getY() >= yBtmLeft)))
                                            .count();
+                    double right = leftRulings.get(j).getStartLocation().getX();
                     if (count == 0) {
-                        Rectangle gap = new Rectangle((float) xRight, (float) yBtmRight,
-                                                      (float) leftRulings.get(j).getStartLocation().getX(),
-                                                      (float) yTopLeft);
+                        Rectangle gap =
+                                new Rectangle((float) xRight, (float) yBtmRight, (float) right, (float) yTopLeft);
                         gaps.add(gap);
                         rightRulings.remove(i--);
                         leftRulings.remove(j);
@@ -166,9 +166,9 @@ public class PageLayoutAlgorithm {
 
     private static Rectangle getBoundingRectangle(List<? extends Rectangle> obstacles) {
         Float left   = obstacles.stream().map(Rectangle::getLeft).min(Float::compare).orElse(0f) - 10;
-        Float bottom = obstacles.stream().map(Rectangle::getBottom).min(Float::compare).orElse(0f) - 10;
+        Float bottom = obstacles.stream().map(Rectangle::getBottom).min(Float::compare).orElse(0f);
         Float right  = obstacles.stream().map(Rectangle::getRight).max(Float::compare).orElse(0f) + 10;
-        Float top    = obstacles.stream().map(Rectangle::getTop).max(Float::compare).orElse(0f) + 10;
+        Float top    = obstacles.stream().map(Rectangle::getTop).max(Float::compare).orElse(0f);
         return new Rectangle(left, bottom, right, top);
     }
 }
