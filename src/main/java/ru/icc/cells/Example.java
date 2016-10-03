@@ -2,8 +2,12 @@ package ru.icc.cells;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import ru.icc.cells.common.Page;
+import ru.icc.cells.common.TableRegion;
 import ru.icc.cells.common.TextBlock;
+import ru.icc.cells.common.TextLine;
 import ru.icc.cells.debug.visual.PdfBoxWriter;
+import ru.icc.cells.detectors.TableRegionDetector;
+import ru.icc.cells.detectors.TextLineDetector;
 import ru.icc.cells.utils.TextChunkProcessor;
 import ru.icc.cells.utils.content.PageLayoutAlgorithm;
 import ru.icc.cells.utils.content.PdfContentExtractor;
@@ -11,62 +15,44 @@ import ru.icc.cells.utils.content.PdfContentExtractor;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Андрей on 23.09.2016.
  */
 public class Example {
-    private static final String[] TEST_PDF_PATHS = {
-            "src/test/resources/pdf/eu-009a.pdf",
-            "src/test/resources/pdf/Japan_Agricultural_HB_2007.2.pdf",
-            "src/test/resources/pdf/Japan_Agricultural_HB_2007.4.pdf",
-            "src/test/resources/pdf/Japan_Agricultural_HB_2007.5.pdf",
-            "src/test/resources/pdf/Japan_Science_HB_2007.5.pdf",
-            "src/test/resources/pdf/us-004 2.pdf",
-            "src/test/resources/pdf/us-028 3.pdf",
-            "src/test/resources/pdf/us-031a 2.pdf",
-            "src/test/resources/pdf/us-037.pdf",
-            "src/test/resources/pdf/USDA_Tobacco_2005.12.pdf"
-    };
+    public static final String TEST_PDF_DIR = "src/test/resources/pdf/";
+    public static final String SAVE_PDF_DIR = "src/test/resources/pdf/edit/";
 
-    private static final String[] SAVE_TEST_PDF_PATHS = {
-            "src/test/resources/pdf/edit/eu-009a.pdf",
-            "src/test/resources/pdf/edit/Japan_Agricultural_HB_2007.2.pdf",
-            "src/test/resources/pdf/edit/Japan_Agricultural_HB_2007.4.pdf",
-            "src/test/resources/pdf/edit/Japan_Agricultural_HB_2007.5.pdf",
-            "src/test/resources/pdf/edit/Japan_Science_HB_2007.5.pdf",
-            "src/test/resources/pdf/edit/us-004 2.pdf",
-            "src/test/resources/pdf/edit/us-028 3.pdf",
-            "src/test/resources/pdf/edit/us-031a 2.pdf",
-            "src/test/resources/pdf/edit/us-037.pdf",
-            "src/test/resources/pdf/edit/USDA_Tobacco_2005.12.pdf"
-    };
-    public static void main(String[] args) {
-        for (int i = 0; i < TEST_PDF_PATHS.length; i++) {
-            String path = TEST_PDF_PATHS[i];
+    public static void main(String[] args) throws IOException {
+        File folder = new File(TEST_PDF_DIR);
+        for (File file : folder.listFiles(File::isFile)) {
+            System.out.println(file.getName());
+            String path = file.getAbsolutePath();
             try {
                 PdfContentExtractor extractor = new PdfContentExtractor(path);
                 PDDocument          document  = PDDocument.load(new File(path));
                 PdfBoxWriter        writer    = new PdfBoxWriter(document);
-                writer.setShowChunkOrder(true);
 
                 for (int pageNumber = 0; pageNumber < extractor.getNumberOfPages(); pageNumber++) {
                     Page page = extractor.getPageContent(pageNumber + 1);
 
                     TextChunkProcessor textChunkProcessor = new TextChunkProcessor(page);
                     List<TextBlock>    textBlocks         = textChunkProcessor.process();
+                    List<TextBlock>    sortedTextBlocks   = new ArrayList<>(textBlocks);
+                    sortedTextBlocks.sort(PageLayoutAlgorithm.RECTANGLE_COMPARATOR);
 
-                    writer.setPage(pageNumber);
-                    writer.setColor(Color.ORANGE);
-                    textBlocks.forEach(writer::drawChunk);
-                    writer.setColor(Color.BLUE);
-                    PageLayoutAlgorithm.getHorizontalGaps(textBlocks).forEach(writer::drawRect);
-                    writer.setColor(Color.GREEN);
-                    PageLayoutAlgorithm.getVerticalGaps(textBlocks).forEach(writer::drawRect);
+                    TextLineDetector    textLineDetector    = new TextLineDetector();
+                    List<TextLine>      textLines           = textLineDetector.detect(textBlocks);
+                    TableRegionDetector tableRegionDetector = new TableRegionDetector();
+                    List<TableRegion>   tableRegions        = tableRegionDetector.detect(textLines);
+
+                    writer.setColor(Color.RED);
+                    tableRegions.forEach(writer::drawRect);
                 }
                 writer.close();
-                document.save(SAVE_TEST_PDF_PATHS[i]);
+                document.save(SAVE_PDF_DIR + file.getName());
                 document.close();
             } catch (IOException e) {
                 e.printStackTrace();
