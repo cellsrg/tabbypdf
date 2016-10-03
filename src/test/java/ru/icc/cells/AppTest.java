@@ -70,7 +70,6 @@ public class AppTest extends TestCase {
                 writer.setPage(pageNumber);
                 writer.setColor(Color.BLUE);
                 page.getRulings().forEach(writer::drawRuling);
-                writer.setShowChunkOrder(true);
                 writer.setColor(Color.ORANGE);
                 page.getOriginChunks().forEach(writer::drawRect);
                 writer.close();

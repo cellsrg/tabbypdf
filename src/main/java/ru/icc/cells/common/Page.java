@@ -5,12 +5,11 @@ import java.util.List;
 /**
  * Created by Андрей on 22.09.2016.
  */
-public class Page extends Rectangle implements Orderable{
+public class Page extends Rectangle {
     private final List<TextChunk> originChunks;
     private final List<TextChunk> characterChunks;
     private final List<TextChunk> wordChunks;
     private final List<Ruling>    rulings;
-    private int                   order;
 
     public Page(List<TextChunk> originChunks, List<TextChunk> characterChunks, List<TextChunk> wordChunks,
                 List<Ruling> rulings) {
@@ -34,15 +33,5 @@ public class Page extends Rectangle implements Orderable{
 
     public List<TextChunk> getWordChunks() {
         return wordChunks;
-    }
-
-    @Override
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    @Override
-    public int getOrder() {
-        return order;
     }
 }

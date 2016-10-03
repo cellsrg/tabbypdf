@@ -6,15 +6,10 @@ import java.util.List;
 /**
  * Created by sunveil on 27/06/16.
  */
-public class TextBlock extends Rectangle implements Orderable {
-
-    private int order;
+public class TextBlock extends Rectangle {
 
     public TextBlock() {
-        setLeft(0);
-        setBottom(0);
-        setRight(0);
-        setTop(0);
+        super();
     }
 
     private List<TextChunk> chunks = new ArrayList<>();
@@ -47,16 +42,6 @@ public class TextBlock extends Rectangle implements Orderable {
 
     public boolean isEmpty() {
         return chunks.isEmpty();
-    }
-
-    @Override
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    @Override
-    public int getOrder() {
-        return order;
     }
 
     public String getText() {

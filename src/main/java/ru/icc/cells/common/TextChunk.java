@@ -6,7 +6,7 @@ import com.itextpdf.text.pdf.parser.Vector;
 /**
  * Created by sunveil on 27/06/16.
  */
-public class TextChunk extends Rectangle implements Comparable<TextChunk>, Orderable {
+public class TextChunk extends Rectangle implements Comparable<TextChunk> {
     /**
      * the text of the chunk
      */
@@ -36,7 +36,6 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk>, Order
      * the width of a single space character in the font of the chunk
      */
     private final float        charSpaceWidth;
-    private       int          order;
     private       DocumentFont font;
 
     public void setChunkFont(DocumentFont font) {
@@ -45,18 +44,6 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk>, Order
 
     public DocumentFont getChunkFont() {
         return this.font;
-    }
-
-
-
-    @Override
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    @Override
-    public int getOrder() {
-        return this.order;
     }
 
     public TextChunk(String string, float left, float bottom, float right, float top, float charSpaceWidth) {

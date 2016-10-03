@@ -4,10 +4,6 @@ package ru.icc.cells.common;
  * Created by Андрей on 23.09.2016.
  */
 public class Rectangle {
-//    protected Vector startLocation;
-//    protected Vector endLocation;
-//    protected Vector rightTopPoint;
-
     private float left, bottom, right, top;
 
     public Rectangle() {
@@ -15,9 +11,6 @@ public class Rectangle {
     }
 
     public Rectangle(float left, float bottom, float right, float top) {
-//        this.setStartLocation(new Vector(left, bottom, 0));
-//        this.setEndLocation(new Vector(right, bottom, 0));
-//        this.setRightTopPoint(new Vector(right, top, 0));
         this.left = left;
         this.bottom = bottom;
         this.right = right;
@@ -57,10 +50,10 @@ public class Rectangle {
     }
 
     protected <T extends Rectangle> void join(T other) {
-        left   = Float.min(this.left, other.getLeft());
+        left = Float.min(this.left, other.getLeft());
         bottom = Float.min(this.bottom, other.getBottom());
-        right  = Float.max(this.right, other.getRight());
-        top    = Float.max(this.top, other.getTop());
+        right = Float.max(this.right, other.getRight());
+        top = Float.max(this.top, other.getTop());
     }
 
     public <T extends Rectangle> boolean contains(T other) {

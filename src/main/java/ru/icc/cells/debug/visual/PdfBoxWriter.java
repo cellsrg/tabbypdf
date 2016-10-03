@@ -3,9 +3,8 @@ package ru.icc.cells.debug.visual;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import ru.icc.cells.common.Orderable;
-import ru.icc.cells.common.Rectangle;
 import ru.icc.cells.common.Ruling;
+import ru.icc.cells.common.Rectangle;
 
 import java.awt.*;
 import java.io.Closeable;
@@ -16,7 +15,6 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
     private PDDocument          document;
     private PDPageContentStream contentStream;
     private int                 pageNumber;
-    private boolean             showChunkOrder;
 
     public PdfBoxWriter(PDDocument document) throws IOException {
         this.document = document;
@@ -45,10 +43,6 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
         }
     }
 
-    public void setShowChunkOrder(boolean showChunkOrder) {
-        this.showChunkOrder = showChunkOrder;
-    }
-
     @Override
     public void setColor(Color color) {
         try {
@@ -66,22 +60,6 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
             contentStream.setFont(PDType1Font.HELVETICA, 8);
             contentStream.showText(text);
             contentStream.endText();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public <T extends ru.icc.cells.common.Rectangle & Orderable> void drawChunk(T chunk) {
-        try {
-            drawRect(chunk);
-            if (showChunkOrder) {
-                contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA, 8);
-                contentStream.newLineAtOffset(chunk.getLeft(), chunk.getTop());
-                contentStream.showText(String.valueOf(chunk.getOrder()));
-                contentStream.endText();
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }

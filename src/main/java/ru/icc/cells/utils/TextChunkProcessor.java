@@ -2,7 +2,6 @@ package ru.icc.cells.utils;
 
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.pdf.parser.Vector;
 import ru.icc.cells.common.Page;
 import ru.icc.cells.common.Rectangle;
 import ru.icc.cells.common.TextBlock;
@@ -54,10 +53,6 @@ public class TextChunkProcessor {
             textBlocks = joinVerticalLines(textBlocks);
             diff = diff - textBlocks.size();
         }
-
-        for (int i = 0; i < textBlocks.size(); i++) {
-            textBlocks.get(i).setOrder(i);
-        }
         return textBlocks;
     }
 
@@ -103,7 +98,7 @@ public class TextChunkProcessor {
     /**
      * Checks whether firstRect is on the left of secondRect
      */
-    private static <T extends Rectangle> boolean isHorizontalPositionValid(T firstRect, T secondRect) {
+    public static <T extends Rectangle> boolean isHorizontalPositionValid(T firstRect, T secondRect) {
         float lx1 = firstRect.getLeft();
         float lx2 = secondRect.getLeft();
         float ty1 = firstRect.getTop();

@@ -67,21 +67,14 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
                   .filter(rI -> !rI.getText().isEmpty()).forEachOrdered(rI -> {
             locationalResult.add(extractLocation(rI));
         });
-        for (int i = 0; i < locationalResult.size(); i++) {
-            locationalResult.get(i).setOrder(i);
-        }
-
         locationalChunkResult.add(extractLocation(renderInfo)); //extract chunk
-        for (int i = 0; i < locationalChunkResult.size(); i++) {
-            locationalChunkResult.get(i).setOrder(i);
-        }
     }
 
     private TextChunk extractLocation(TextRenderInfo renderInfo) {
         LineSegment topSegment = renderInfo.getAscentLine();
         LineSegment btmSegment = renderInfo.getDescentLine();
-        if (renderInfo.getRise() !=
-            0) { // remove the rise from the baseline - we do this because the text from a super/subscript render operations should probably be considered as part of the baseline of the text the super/sub is relative to
+        if (renderInfo.getRise() != 0) {
+            // remove the rise from the baseline - we do this because the text from a super/subscript render operations should probably be considered as part of the baseline of the text the super/sub is relative to
             Matrix riseOffsetTransform = new Matrix(0, -renderInfo.getRise());
             btmSegment = btmSegment.transformBy(riseOffsetTransform);
             topSegment = topSegment.transformBy(riseOffsetTransform);
@@ -231,7 +224,6 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
                 if (previousChunk.getText().isEmpty()) continue;
                 left = previousChunk.getLeft();
                 bottom = previousChunk.getBottom();
-//                start = previousChunk.getStartLocation();
             }
 
             if ((!isChunkAtSpace(chunk, previousChunk) || previousChunk.getText().equals("•")) &&
@@ -244,7 +236,6 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
                 lr.append(previousChunk.getText());
                 TextChunk newChunk = new TextChunk(lr.toString(), left, bottom, right, top, previousChunk.getCharSpaceWidth());
                 newChunk.setChunkFont(previousChunk.getChunkFont());
-                newChunk.setOrder(locationalWordResult.size());
                 locationalWordResult.add(newChunk);
 
                 left = null;
@@ -260,13 +251,10 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
             top = chunk.getTop();
 
             lr.append(chunk.getText());
-//            TextChunk newChunk = new TextChunk(lr.toString(), start, end, previousChunk.getCharSpaceWidth());
             TextChunk newChunk = new TextChunk(lr.toString(), left, bottom, right, top, previousChunk.getCharSpaceWidth());
             newChunk.setChunkFont(chunk.getChunkFont());
-            newChunk.setOrder(locationalWordResult.size());
             locationalWordResult.add(newChunk);
         } else {
-            chunk.setOrder(locationalWordResult.size());
             locationalWordResult.add(chunk);
         }
         return locationalWordResult;

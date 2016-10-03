@@ -1,6 +1,5 @@
 package ru.icc.cells.debug.visual;
 
-import ru.icc.cells.common.Orderable;
 import ru.icc.cells.common.Ruling;
 
 import java.awt.*;
@@ -12,8 +11,6 @@ public interface PdfWriter {
     void setColor(Color color);
 
     void printText(String text, float x, float y);
-
-    <T extends ru.icc.cells.common.Rectangle & Orderable> void drawChunk(T chunk);
 
     <T extends ru.icc.cells.common.Rectangle> void drawRect(T rect);
 
