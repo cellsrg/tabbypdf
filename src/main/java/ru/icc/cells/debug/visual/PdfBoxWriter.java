@@ -10,12 +10,19 @@ import java.awt.*;
 import java.io.Closeable;
 import java.io.IOException;
 
+/**
+ * A PdfBox implementation of PdfWriter
+ */
 public class PdfBoxWriter implements PdfWriter, Closeable {
 
     private PDDocument          document;
     private PDPageContentStream contentStream;
     private int                 pageNumber;
+    private Color               color = Color.RED;
 
+    /**
+     * Creates pdf writer. Writer must be closed after usage
+     */
     public PdfBoxWriter(PDDocument document) throws IOException {
         this.document = document;
         this.contentStream =
@@ -23,6 +30,11 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
                                         true, true);
     }
 
+    /**
+     * Set page for graphic output
+     * @param pageNumber 0-based page number
+     * @throws IOException
+     */
     public void setPage(int pageNumber) throws IOException {
         if (this.pageNumber != pageNumber) {
             this.pageNumber = pageNumber;
@@ -30,6 +42,7 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
             contentStream.close();
             contentStream = new PDPageContentStream(document, document.getPage(pageNumber),
                                                     PDPageContentStream.AppendMode.APPEND, true, true);
+            contentStream.setStrokingColor(color);
         }
     }
 
@@ -46,6 +59,7 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
     @Override
     public void setColor(Color color) {
         try {
+            this.color = color;
             contentStream.setStrokingColor(color);
         } catch (IOException e) {
             e.printStackTrace();
@@ -68,8 +82,7 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
     @Override
     public <T extends Rectangle> void drawRect(T rect) {
         try {
-            contentStream.addRect(rect.getLeft(), rect.getBottom(),
-                                  Math.abs(rect.getRight() - rect.getLeft()),
+            contentStream.addRect(rect.getLeft(), rect.getBottom(), Math.abs(rect.getRight() - rect.getLeft()),
                                   Math.abs(rect.getTop() - rect.getBottom()));
             contentStream.stroke();
         } catch (IOException e) {

@@ -1,11 +1,15 @@
 package ru.icc.cells.common;
 
 /**
- * Created by Андрей on 23.09.2016.
+ * Simple rectangular bounding, represented with four coordinates:
+ * left, right x-coordinates and top, bottom y-coordinates
  */
 public class Rectangle {
     private float left, bottom, right, top;
 
+    /**
+     * Creates rectangle with zero width and height at (0,0)
+     */
     public Rectangle() {
         this(0, 0, 0, 0);
     }
@@ -49,6 +53,9 @@ public class Rectangle {
         this.top = top;
     }
 
+    /**
+     * Joins this rectangle with another rectangle. Result keeps in this rectangle
+     */
     protected <T extends Rectangle> void join(T other) {
         left = Float.min(this.left, other.getLeft());
         bottom = Float.min(this.bottom, other.getBottom());
@@ -56,6 +63,9 @@ public class Rectangle {
         top = Float.max(this.top, other.getTop());
     }
 
+    /**
+     * Checks whether this rectangle contains other rectangle
+     */
     public <T extends Rectangle> boolean contains(T other) {
         boolean left   = this.left <= other.getLeft();
         boolean right  = this.right >= other.getRight();

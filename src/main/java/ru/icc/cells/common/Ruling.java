@@ -2,6 +2,9 @@ package ru.icc.cells.common;
 
 import com.itextpdf.awt.geom.Point2D;
 
+/**
+ * Simple ruling, represented by 2 points: start and end locations
+ */
 public class Ruling {
     private final Point2D startLocation;
     private final Point2D endLocation;

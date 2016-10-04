@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Андрей on 03.10.2016.
+ * Contains text lines belongs to same table
  */
 public class TableRegion extends Rectangle {
     private List<TextLine> textLines = new ArrayList<>();
+    private List<Rectangle> gaps = new ArrayList<>();
 
     public TableRegion() {
         super();
@@ -17,6 +18,13 @@ public class TableRegion extends Rectangle {
         return textLines;
     }
 
+    public List<Rectangle> getGaps() {
+        return gaps;
+    }
+
+    /**
+     * Adds text line to this table region
+     */
     public void add(TextLine textLine) {
         join(textLine);
         textLines.add(textLine);

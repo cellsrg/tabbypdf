@@ -31,7 +31,7 @@ public class TextChunkProcessor {
     private void prepareChunks(List<TextChunk> chunks) {
         for (int i = 0; i < chunks.size(); i++) {
             TextChunk chunk = chunks.get(i);
-            if (chunk.getText().replaceAll("•", "").replaceAll(" ", "").length() == 0) {//\u2022
+            if (chunk.getText().replaceAll("•", "").replaceAll(" ", "").replaceAll("_", "").length() == 0) {//\u2022
                 chunks.remove(i--);
             }
         }
@@ -39,8 +39,8 @@ public class TextChunkProcessor {
 
     private List<TextBlock> join(List<TextChunk> chunks) {
         List<TextBlock> textBlocks = joinHorizontalChunks(chunks);
-        int diff = textBlocks.size();
-        while (diff!=0) {
+        int             diff       = textBlocks.size();
+        while (diff != 0) {
             diff = textBlocks.size();
             textBlocks = joinHorizontalChunks(chunks);
             diff = diff - textBlocks.size();
@@ -48,7 +48,7 @@ public class TextChunkProcessor {
         textBlocks = joinVerticalLines(textBlocks);
         normalize(textBlocks);
         diff = textBlocks.size();
-        while (diff!=0) {
+        while (diff != 0) {
             diff = textBlocks.size();
             textBlocks = joinVerticalLines(textBlocks);
             diff = diff - textBlocks.size();
@@ -115,6 +115,7 @@ public class TextChunkProcessor {
     private boolean isDistanceLessEqualsSpaceLength(TextChunk leftChunk, TextChunk rightChunk) {
         if (leftChunk.getRight() >= rightChunk.getLeft()) return true;
         /* Creating a chunk with only " " content and taking its width */
+//        float spaceWidth    = leftChunk.getCharSpaceWidth();
         float spaceWidth    = new Chunk(' ', new Font(leftChunk.getChunkFont())).getWidthPoint();
         float chunkDistance = rightChunk.getLeft() - leftChunk.getRight();
         return chunkDistance <= spaceWidth * SPACE_WIDTH_MULTIPLIER;
@@ -174,11 +175,19 @@ public class TextChunkProcessor {
                 textBlock = null;
                 continue;
             }
+            if (i - 1 >= 0 && isHorizontalPositionValid(textLines.get(i - 1), firstChunk) &&
+                secondChunk.getLeft() <= textLines.get(i - 1).getLeft()) {
+                result.add(textBlock);
+                textBlock = null;
+                continue;
+            }
             if (isThereLinesBetweenChunks(firstChunk, secondChunk, false)) {
                 result.add(textBlock);
                 textBlock = null;
                 continue;
             }
+            TextChunk chunk = firstChunk.getChunks().get(firstChunk.getChunks().size() - 1);
+            chunk.setText(chunk.getText() + System.lineSeparator());
         }
         if (textBlock == null) {
             textBlock = new TextBlock();
@@ -209,12 +218,11 @@ public class TextChunkProcessor {
     /**
      * Checks whether distance between chunks is less or equals than height of secondRect
      */
-    private <T extends Rectangle> boolean isDistanceLessEqualsHeight(T firstRect, T secondRect) {
-        float height = (float) (Math.abs(secondRect.getTop() - secondRect.getBottom()) *
-                                HEIGHT_MULTIPLIER);
-        float distance = Math.abs(((firstRect.getTop() > secondRect.getTop()) ?
-                                   firstRect.getBottom() :
-                                   firstRect.getTop()) - secondRect.getTop());
+    public static <T extends Rectangle> boolean isDistanceLessEqualsHeight(T firstRect, T secondRect) {
+        float height = (float) (Math.abs(secondRect.getTop() - secondRect.getBottom()) * HEIGHT_MULTIPLIER);
+        float distance = Math.abs(
+                ((firstRect.getTop() > secondRect.getTop()) ? firstRect.getBottom() : firstRect.getTop()) -
+                secondRect.getTop());
         return distance <= height;
     }
 
@@ -224,8 +232,7 @@ public class TextChunkProcessor {
             for (int j = i + 2; j < data.size(); j++) {
                 Rectangle right = data.get(j);
                 if ((isHorizontalPositionValid(left, right) /*&& (isVerticalPositionValid(left, right)
-                        && isDistanceLessEqualsHeight(left, right))*/) &&
-                    left.getRight() >= right.getLeft()) {
+                        && isDistanceLessEqualsHeight(left, right))*/) && left.getRight() >= right.getLeft()) {
                     left.setRight(right.getLeft() - 5);
                 }
             }

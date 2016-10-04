@@ -4,17 +4,13 @@ import com.itextpdf.text.pdf.DocumentFont;
 import com.itextpdf.text.pdf.parser.Vector;
 
 /**
- * Created by sunveil on 27/06/16.
+ * Rectangular area containing text and font characteristics
  */
 public class TextChunk extends Rectangle implements Comparable<TextChunk> {
     /**
      * the text of the chunk
      */
     private       String       text;
-    /**
-     * unit vector in the orientation of the chunk
-     */
-    private final Vector       orientationVector;
     /**
      * the orientation as a scalar for quick sorting
      */
@@ -36,6 +32,9 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk> {
      * the width of a single space character in the font of the chunk
      */
     private final float        charSpaceWidth;
+    /**
+     * the font of the chunk text
+     */
     private       DocumentFont font;
 
     public void setChunkFont(DocumentFont font) {
@@ -58,7 +57,8 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk> {
         if (oVector.length() == 0) {
             oVector = new Vector(1, 0, 0);
         }
-        orientationVector = oVector.normalize();
+        //unit vector in the orientation of the chunk
+        Vector orientationVector = oVector.normalize();
         orientationMagnitude =
                 (int) (Math.atan2(orientationVector.get(Vector.I2), orientationVector.get(Vector.I1)) * 1000);
 
@@ -69,6 +69,10 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk> {
         distParallelEnd = orientationVector.dot(end);
     }
 
+    public void setText(String text) {
+        this.text = text;
+    }
+
     public String getText() {
         return text;
     }
@@ -77,28 +81,42 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk> {
         return charSpaceWidth;
     }
 
+    /**
+     * Used for debugging
+     */
     public void printDiagnostics() {
-        System.out.println("Text (@" + getLeft() + "," + getBottom() + " -> " +
-                           getRight() + "," + getBottom() + "): " + text);
+        System.out.println(
+                "Text (@" + getLeft() + "," + getBottom() + " -> " + getRight() + "," + getBottom() + "): " + text);
         System.out.println("orientationMagnitude: " + orientationMagnitude);
         System.out.println("distPerpendicular: " + distPerpendicular);
         System.out.println("distParallel: " + distParallelStart);
     }
 
-
+    /**
+     * Checks whether this chunk is at the same horizontal line with other chunk
+     * @param as other chunk
+     */
     public boolean sameLine(TextChunk as) {
         if (orientationMagnitude != as.orientationMagnitude) return false;
         return distPerpendicular == as.distPerpendicular;
     }
 
+    /**
+     * Checks whether this chunk is at the same horizontal line with other chunk
+     * @param as other chunk
+     */
     public boolean sameLine2(TextChunk as) {
         return getBottom() == as.getBottom();
     }
 
+
+    /**
+     * @param other other chunk
+     * @return distance from end of other chunk
+     */
     public float distanceFromEndOf(TextChunk other) {
         return distParallelStart - other.distParallelEnd;
     }
-
 
     @Override
     public int compareTo(TextChunk rhs) {
@@ -112,9 +130,5 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk> {
         if (rslt != 0) return rslt;
 
         return Float.compare(distParallelStart, rhs.distParallelStart);
-    }
-
-    public void setText(String text) {
-        this.text = text;
     }
 }

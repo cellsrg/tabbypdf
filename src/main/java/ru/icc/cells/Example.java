@@ -1,21 +1,17 @@
 package ru.icc.cells;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import ru.icc.cells.common.Page;
-import ru.icc.cells.common.TableRegion;
-import ru.icc.cells.common.TextBlock;
-import ru.icc.cells.common.TextLine;
+import ru.icc.cells.common.*;
 import ru.icc.cells.debug.visual.PdfBoxWriter;
+import ru.icc.cells.detectors.TableBoundingDetector;
 import ru.icc.cells.detectors.TableRegionDetector;
 import ru.icc.cells.detectors.TextLineDetector;
 import ru.icc.cells.utils.TextChunkProcessor;
-import ru.icc.cells.utils.content.PageLayoutAlgorithm;
 import ru.icc.cells.utils.content.PdfContentExtractor;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,19 +33,30 @@ public class Example {
 
                 for (int pageNumber = 0; pageNumber < extractor.getNumberOfPages(); pageNumber++) {
                     Page page = extractor.getPageContent(pageNumber + 1);
+                    writer.setPage(pageNumber);
+                    List<TextBlock>     textBlocks     = new TextChunkProcessor(page).process();
+                    List<TextLine>      textLines      = new TextLineDetector().detect(textBlocks);
+                    List<TableRegion>   tableRegions   = new TableRegionDetector().detect(textLines);
+                    List<TableBounding> tableBoundings = new TableBoundingDetector(textLines).detect(tableRegions);
 
-                    TextChunkProcessor textChunkProcessor = new TextChunkProcessor(page);
-                    List<TextBlock>    textBlocks         = textChunkProcessor.process();
-                    List<TextBlock>    sortedTextBlocks   = new ArrayList<>(textBlocks);
-                    sortedTextBlocks.sort(PageLayoutAlgorithm.RECTANGLE_COMPARATOR);
-
-                    TextLineDetector    textLineDetector    = new TextLineDetector();
-                    List<TextLine>      textLines           = textLineDetector.detect(textBlocks);
-                    TableRegionDetector tableRegionDetector = new TableRegionDetector();
-                    List<TableRegion>   tableRegions        = tableRegionDetector.detect(textLines);
-
-                    writer.setColor(Color.RED);
-                    tableRegions.forEach(writer::drawRect);
+                    for (TableBounding tableBounding : tableBoundings) {
+                        writer.setColor(Color.RED);
+                        writer.drawRect(tableBounding);
+                        for (TableRegion tableRegion : tableBounding.getTableRegions()) {
+                            writer.setColor(Color.CYAN);
+                            tableRegion.getGaps().forEach(writer::drawRect);
+                            writer.setColor(Color.BLUE);
+                            writer.drawRect(tableRegion);
+                            for (TextLine textLine : tableRegion.getTextLines()) {
+                                writer.setColor(Color.GREEN);
+                                writer.drawRect(textLine);
+                                writer.setColor(Color.ORANGE);
+                                textLine.getGaps().forEach(writer::drawRect);
+                                writer.setColor(Color.PINK);
+                                textLine.getTextBlocks().forEach(writer::drawRect);
+                            }
+                        }
+                    }
                 }
                 writer.close();
                 document.save(SAVE_PDF_DIR + file.getName());

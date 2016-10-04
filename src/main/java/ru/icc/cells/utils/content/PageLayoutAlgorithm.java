@@ -4,6 +4,7 @@ import ru.icc.cells.common.Rectangle;
 import ru.icc.cells.common.Ruling;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
  * Created by Андрей on 26.09.2016.
  */
 public class PageLayoutAlgorithm {
+    public static List<Ruling>          rulings              = new ArrayList<>();
     public static Comparator<Rectangle> RECTANGLE_COMPARATOR = (rect1, rect2) -> {
         if (rect1.getTop() > rect2.getTop()) {
             return -1;
@@ -69,8 +71,17 @@ public class PageLayoutAlgorithm {
      */
     public static List<Rectangle> getVerticalGaps(List<? extends Rectangle> obstacles) {
         Rectangle boundary = getBoundingRectangle(obstacles);
-        Rectangle rTop     =
-                new Rectangle(boundary.getLeft(), boundary.getTop(), boundary.getRight(), boundary.getTop());
+        if (obstacles.size() == 0) return Collections.emptyList();
+        else if (obstacles.size() == 1) {
+            List<Rectangle> gaps     = new ArrayList<>();
+            Rectangle       obstacle = obstacles.get(0);
+            gaps.add(new Rectangle(boundary.getLeft(), boundary.getBottom(), obstacle.getLeft(), obstacle.getTop()));
+            gaps.add(new Rectangle(obstacle.getRight(), obstacle.getBottom(), boundary.getRight(), boundary.getTop()));
+            return gaps;
+        }
+
+        rulings = new ArrayList<>();
+        Rectangle rTop = new Rectangle(boundary.getLeft(), boundary.getTop(), boundary.getRight(), boundary.getTop());
         Rectangle rBtm =
                 new Rectangle(boundary.getLeft(), boundary.getBottom(), boundary.getRight(), boundary.getBottom());
         List<Rectangle> r = new ArrayList<>();
@@ -85,12 +96,12 @@ public class PageLayoutAlgorithm {
             Float yTopLeft = null, yTopRight = null, yBtmLeft = null, yBtmRight = null;
             for (int j = i - 1; j >= 0; j--) {
                 if (r.get(i).getTop() <= r.get(j).getBottom()) {
-                    if (yTopLeft == null && r.get(j).getLeft() <= r.get(i).getLeft() &&
-                        r.get(i).getLeft() <= r.get(j).getRight()) {
+                    if (yTopLeft == null && r.get(j).getLeft() < r.get(i).getLeft() &&
+                        r.get(i).getLeft() < r.get(j).getRight()) {
                         yTopLeft = r.get(j).getBottom();
                     }
-                    if (yTopRight == null && r.get(j).getLeft() <= r.get(i).getRight() &&
-                        r.get(i).getRight() <= r.get(j).getRight()) {
+                    if (yTopRight == null && r.get(j).getLeft() < r.get(i).getRight() &&
+                        r.get(i).getRight() < r.get(j).getRight()) {
                         yTopRight = r.get(j).getBottom();
                     }
                     if (yTopLeft != null && yTopRight != null) break;
@@ -98,19 +109,25 @@ public class PageLayoutAlgorithm {
             }
             for (int j = i + 1; j < r.size(); j++) {
                 if (r.get(i).getBottom() >= r.get(j).getTop()) {
-                    if (yBtmLeft == null && r.get(j).getLeft() <= r.get(i).getLeft() &&
-                        r.get(i).getLeft() <= r.get(j).getRight()) {
+                    if (yBtmLeft == null && r.get(j).getLeft() < r.get(i).getLeft() &&
+                        r.get(i).getLeft() < r.get(j).getRight()) {
                         yBtmLeft = r.get(j).getTop();
                     }
                 }
-                if (yBtmRight == null && r.get(j).getLeft() <= r.get(i).getRight() &&
-                    r.get(i).getRight() <= r.get(j).getRight()) {
+                if (yBtmRight == null && r.get(j).getLeft() < r.get(i).getRight() &&
+                    r.get(i).getRight() < r.get(j).getRight()) {
                     yBtmRight = r.get(j).getTop();
                 }
                 if (yBtmLeft != null && yBtmRight != null) break;
             }
-            Ruling leftRuling  = new Ruling(r.get(i).getLeft(), yBtmLeft, r.get(i).getLeft(), yTopLeft);
-            Ruling rightRuling = new Ruling(r.get(i).getRight(), yBtmRight, r.get(i).getRight(), yTopRight);
+            Ruling leftRuling  = new Ruling(r.get(i).getLeft(),
+                                            yBtmLeft,
+                                            r.get(i).getLeft(),
+                                            yTopLeft);
+            Ruling rightRuling = new Ruling(r.get(i).getRight(),
+                                            yBtmRight,
+                                            r.get(i).getRight(),
+                                            yTopRight);
             if (!leftRulings.contains(leftRuling)) {
                 leftRulings.add(leftRuling);
             }
@@ -125,6 +142,9 @@ public class PageLayoutAlgorithm {
         rightRulings.add(leftRuling);
         leftRulings.sort(lineComparator);
         rightRulings.sort(lineComparator);
+
+        rulings.addAll(leftRulings);
+        rulings.addAll(rightRulings);
 
         List<Rectangle> gaps = new ArrayList<>();
         for (int i = 0; i < rightRulings.size(); i++) {

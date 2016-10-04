@@ -3,7 +3,7 @@ package ru.icc.cells.common;
 import java.util.List;
 
 /**
- * Created by Андрей on 22.09.2016.
+ * Page object contains raw data from PDF page.
  */
 public class Page extends Rectangle {
     private final List<TextChunk> originChunks;
@@ -19,18 +19,30 @@ public class Page extends Rectangle {
         this.rulings = rulings;
     }
 
+    /**
+     * Chunks represented by PDF content stream instructions like 'TJ' etc...
+     */
     public List<TextChunk> getOriginChunks() {
         return originChunks;
     }
 
+    /**
+     * Rulings represented by PDF content stream instructions like 'LINETO' etc...
+     */
     public List<Ruling> getRulings() {
         return rulings;
     }
 
+    /**
+     * Chunks compiled from each character render info
+     */
     public List<TextChunk> getCharacterChunks() {
         return characterChunks;
     }
 
+    /**
+     * Chunks combined into words from character chunks
+     */
     public List<TextChunk> getWordChunks() {
         return wordChunks;
     }

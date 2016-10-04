@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sunveil on 27/06/16.
+ * Basic container from text chunks. Contains chunks that are in the same table cell
  */
 public class TextBlock extends Rectangle {
 
@@ -18,11 +18,19 @@ public class TextBlock extends Rectangle {
         return chunks;
     }
 
+    /**
+     * Add a chunk to this text block
+     * @param textChunk
+     */
     public void add(TextChunk textChunk) {
         join(textChunk);
         chunks.add(textChunk);
     }
 
+    /**
+     * Join other text block. Result stores in this text block
+     * @param textBlock
+     */
     public void add(TextBlock textBlock) {
         join(textBlock);
         chunks.addAll(textBlock.chunks);
@@ -40,6 +48,9 @@ public class TextBlock extends Rectangle {
         }
     }
 
+    /**
+     * @return is that text block contains any chunks
+     */
     public boolean isEmpty() {
         return chunks.isEmpty();
     }

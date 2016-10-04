@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Андрей on 03.10.2016.
+ * Container for text blocks placed on same horizontal line
  */
 public class TextLine extends Rectangle {
     private List<TextBlock> textBlocks = new ArrayList<>();
@@ -18,15 +18,24 @@ public class TextLine extends Rectangle {
         return textBlocks;
     }
 
+    /**
+     * @return whitespace areas between text blocks
+     */
     public List<Rectangle> getGaps() {
         return gaps;
     }
 
+    /**
+     * Add text block to this text line
+     */
     public void add(TextBlock textBlock) {
         join(textBlock);
         textBlocks.add(textBlock);
     }
 
+    /**
+     * Add whitespace areas to this text line
+     */
     public void addGaps(List<Rectangle> gaps) {
         this.gaps.addAll(gaps);
         Float left   = gaps.stream().map(Rectangle::getLeft).min(Float::compareTo).orElse(0f);
