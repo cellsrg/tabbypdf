@@ -1,7 +1,7 @@
 package ru.icc.cells.detectors;
 
 import ru.icc.cells.common.Rectangle;
-import ru.icc.cells.common.TableBounding;
+import ru.icc.cells.common.TableBox;
 import ru.icc.cells.common.TableRegion;
 import ru.icc.cells.common.TextLine;
 
@@ -11,19 +11,19 @@ import java.util.List;
 /**
  * Detects the bounding of table
  */
-public class TableBoundingDetector implements Detector<TableBounding,TableRegion> {
+public class TableBoxDetector implements Detector<TableBox,TableRegion> {
 
     private List<TextLine> pageTextLines;
     private int            maxNonTableLinesBetweenRegions;
     private int            minProjectionIntersection;
     private double         gapThreshold;
 
-    public TableBoundingDetector(List<TextLine> pageTextLines) {
+    public TableBoxDetector(List<TextLine> pageTextLines) {
         this(pageTextLines, 2, 0, 0.8);
     }
 
-    public TableBoundingDetector(List<TextLine> pageTextLines, int maxNonTableLinesBetweenRegions,
-                                 int minProjectionIntersection, double gapThreshold) {
+    public TableBoxDetector(List<TextLine> pageTextLines, int maxNonTableLinesBetweenRegions,
+                            int minProjectionIntersection, double gapThreshold) {
         this.pageTextLines = pageTextLines;
         this.maxNonTableLinesBetweenRegions = maxNonTableLinesBetweenRegions;
         this.minProjectionIntersection = minProjectionIntersection;
@@ -55,47 +55,47 @@ public class TableBoundingDetector implements Detector<TableBounding,TableRegion
     }
 
     @Override
-    public List<TableBounding> detect(List<TableRegion> regions) {
-        List<TableBounding> tableBoundings = new ArrayList<>();
-        TableBounding       tableBounding  = null;
-        TableRegion         prevRegion     = null;
+    public List<TableBox> detect(List<TableRegion> regions) {
+        List<TableBox> tableBoxes = new ArrayList<>();
+        TableBox       tableBox   = null;
+        TableRegion    prevRegion = null;
 
         if (regions.size() == 1) {
-            tableBounding = new TableBounding();
-            tableBounding.add(regions.get(0));
-            tableBoundings.add(tableBounding);
-            return tableBoundings;
+            tableBox = new TableBox();
+            tableBox.add(regions.get(0));
+            tableBoxes.add(tableBox);
+            return tableBoxes;
         }else if (regions.size()==0){
-            return tableBoundings;
+            return tableBoxes;
         }
 
         for (int i = 1; i < regions.size(); i++) {
-            if (tableBounding == null) {
-                tableBounding = new TableBounding();
+            if (tableBox == null) {
+                tableBox = new TableBox();
             }
             prevRegion = regions.get(i - 1);
             TableRegion nextRegion = regions.get(i);
-            tableBounding.add(prevRegion);
+            tableBox.add(prevRegion);
 
             if (!(TableRegionDetector.getCountOfTextLinesBetween(pageTextLines, prevRegion, nextRegion) <=
                   maxNonTableLinesBetweenRegions &&
                   tcorr(prevRegion, nextRegion) / prevRegion.getGaps().size() >= gapThreshold)) {
-                if (!(tableBounding.getTableRegions().size() == 1 &&
-                      tableBounding.getTableRegions().get(0).getTextLines().size() == 1)) {
-                    tableBoundings.add(tableBounding);
+                if (!(tableBox.getTableRegions().size() == 1 &&
+                      tableBox.getTableRegions().get(0).getTextLines().size() == 1)) {
+                    tableBoxes.add(tableBox);
                 }
-                tableBounding = null;
+                tableBox = null;
             }
         }
 
 
-        if (tableBounding == null) {
-            tableBounding = new TableBounding();
+        if (tableBox == null) {
+            tableBox = new TableBox();
         }
-        tableBounding.add(regions.get(regions.size() - 1));
-        tableBoundings.add(tableBounding);
+        tableBox.add(regions.get(regions.size() - 1));
+        tableBoxes.add(tableBox);
 
-        return tableBoundings;
+        return tableBoxes;
     }
 
     private int gcorr(Rectangle gap, TableRegion region) {
