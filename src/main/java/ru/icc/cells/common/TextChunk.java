@@ -36,14 +36,10 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk> {
      * the font of the chunk text
      */
     private       DocumentFont font;
-
-    public void setChunkFont(DocumentFont font) {
-        this.font = font;
-    }
-
-    public DocumentFont getChunkFont() {
-        return this.font;
-    }
+    /**
+     * the size of the font of the chunk text
+     */
+    private float fontSize;
 
     public TextChunk(String string, float left, float bottom, float right, float top, float charSpaceWidth) {
         super(left, bottom, right, top);
@@ -67,6 +63,22 @@ public class TextChunk extends Rectangle implements Comparable<TextChunk> {
 
         distParallelStart = orientationVector.dot(start);
         distParallelEnd = orientationVector.dot(end);
+    }
+
+    public void setChunkFont(DocumentFont font) {
+        this.font = font;
+    }
+
+    public DocumentFont getChunkFont() {
+        return this.font;
+    }
+
+    public float getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(float fontSize) {
+        this.fontSize = fontSize;
     }
 
     public void setText(String text) {
