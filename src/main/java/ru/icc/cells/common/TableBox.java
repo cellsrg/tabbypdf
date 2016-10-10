@@ -6,10 +6,10 @@ import java.util.List;
 /**
  * Contains table region that belongs to the same table
  */
-public class TableBounding extends Rectangle {
+public class TableBox extends Rectangle {
     private List<TableRegion> tableRegions = new ArrayList<>();
 
-    public TableBounding() {
+    public TableBox() {
         super();
     }
 
