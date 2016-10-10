@@ -105,6 +105,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
         location = new TextChunk(renderInfo.getText(), left, bottom, right, top, renderInfo.getSingleSpaceWidth());
         GraphicsState gs = ReflectionIText.getGs(renderInfo);
         location.setChunkFont(gs.getFont());
+        location.setFontSize(gs.getFontSize());
         return location;
     }
 
