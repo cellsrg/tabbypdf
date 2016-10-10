@@ -18,7 +18,7 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
     private PDDocument          document;
     private PDPageContentStream contentStream;
     private int                 pageNumber;
-    private Color               color = Color.RED;
+    private Color color = Color.RED;
 
     /**
      * Creates pdf writer. Writer must be closed after usage
@@ -28,10 +28,12 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
         this.contentStream =
                 new PDPageContentStream(document, document.getPage(pageNumber), PDPageContentStream.AppendMode.APPEND,
                                         true, true);
+        contentStream.setStrokingColor(color);
     }
 
     /**
      * Set page for graphic output
+     *
      * @param pageNumber 0-based page number
      * @throws IOException
      */
