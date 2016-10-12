@@ -81,8 +81,15 @@ public class TableRegionDetector implements Detector<TableRegion, TextLine> {
         for (TableRegion region : tableRegions) {
             List<TextBlock> blocks = new ArrayList<>();
             region.getTextLines().forEach(textLine -> blocks.addAll(textLine.getTextBlocks()));
+            List<TextBlock> allBlocks =
+                    region.getTextLines().stream().map(TextLine::getTextBlocks).reduce((textBlocks, textBlocks2) -> {
+                        ArrayList<TextBlock> rectangles = new ArrayList<>();
+                        rectangles.addAll(textBlocks);
+                        rectangles.addAll(textBlocks2);
+                        return rectangles;
+                    }).orElse(new ArrayList<>());
             region.getGaps()
-                  .addAll(/*g(region.getTextLines())*/PageLayoutAlgorithm.getVerticalGaps(region.getTextLines()));
+                  .addAll(/*g(region.getTextLines())*/PageLayoutAlgorithm.getVerticalGaps(allBlocks));
         }
         return tableRegions;
     }
@@ -218,7 +225,8 @@ public class TableRegionDetector implements Detector<TableRegion, TextLine> {
 
     /**
      * Joins the gaps
-     * @param lineGaps gap list to be joined
+     *
+     * @param lineGaps     gap list to be joined
      * @param lastLineGaps gap list to be joined
      */
     private List<Rectangle> app(List<Rectangle> lineGaps, List<Rectangle> lastLineGaps, TextLine line) {
