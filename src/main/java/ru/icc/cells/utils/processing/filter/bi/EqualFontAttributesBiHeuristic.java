@@ -3,13 +3,17 @@ package ru.icc.cells.utils.processing.filter.bi;
 import ru.icc.cells.common.TextChunk;
 import ru.icc.cells.utils.content.FontUtils;
 
-public class EqualFontAttributesBiFilter extends BiFilter<TextChunk> {
-    public EqualFontAttributesBiFilter() {
+public class EqualFontAttributesBiHeuristic extends BiHeuristic<TextChunk> {
+    public EqualFontAttributesBiHeuristic() {
         super(Orientation.BOTH);
     }
 
+    public EqualFontAttributesBiHeuristic(Orientation orientation) {
+        super(orientation);
+    }
+
     @Override
-    public boolean filter(TextChunk first, TextChunk second) {
+    public boolean test(TextChunk first, TextChunk second) {
         String[] firstChunkFontAttributes  = FontUtils.getFontAttributes(first);
         String[] secondChunkFontAttributes = FontUtils.getFontAttributes(second);
         if (firstChunkFontAttributes.length != secondChunkFontAttributes.length) return false;

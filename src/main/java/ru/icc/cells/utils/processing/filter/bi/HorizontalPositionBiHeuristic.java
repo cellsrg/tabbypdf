@@ -2,14 +2,14 @@ package ru.icc.cells.utils.processing.filter.bi;
 
 import ru.icc.cells.common.Rectangle;
 
-public class HorizontalPositionBiFilter extends BiFilter<Rectangle> {
+public class HorizontalPositionBiHeuristic extends BiHeuristic<Rectangle> {
 
-    public HorizontalPositionBiFilter() {
+    public HorizontalPositionBiHeuristic() {
         super(Orientation.HORIZONTAL);
     }
 
     @Override
-    public boolean filter(Rectangle first, Rectangle second) {
+    public boolean test(Rectangle first, Rectangle second) {
         float lx1 = first.getLeft();
         float lx2 = second.getLeft();
         float ty1 = first.getTop();

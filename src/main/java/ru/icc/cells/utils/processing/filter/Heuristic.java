@@ -1,6 +1,6 @@
 package ru.icc.cells.utils.processing.filter;
 
-public interface ChunkFilter {
+public interface Heuristic {
     enum Orientation {
         VERTICAL, HORIZONTAL, BOTH
     }

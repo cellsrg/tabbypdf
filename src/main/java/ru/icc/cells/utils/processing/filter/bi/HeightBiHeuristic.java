@@ -2,20 +2,20 @@ package ru.icc.cells.utils.processing.filter.bi;
 
 import ru.icc.cells.common.Rectangle;
 
-public class HeightBiFilter extends BiFilter<Rectangle> {
+public class HeightBiHeuristic extends BiHeuristic<Rectangle> {
     private float heightMultiplier;
 
-    public HeightBiFilter() {
+    public HeightBiHeuristic() {
         this(1f);
     }
 
-    public HeightBiFilter(float heightMultiplier) {
+    public HeightBiHeuristic(float heightMultiplier) {
         super(Orientation.VERTICAL);
         this.heightMultiplier = heightMultiplier;
     }
 
     @Override
-    public boolean filter(Rectangle first, Rectangle second) {
+    public boolean test(Rectangle first, Rectangle second) {
 
         float height = (Math.abs(second.getTop() - second.getBottom()) * heightMultiplier);
         float distance =

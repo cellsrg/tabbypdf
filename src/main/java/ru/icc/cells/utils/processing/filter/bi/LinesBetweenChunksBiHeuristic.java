@@ -5,17 +5,21 @@ import ru.icc.cells.common.Ruling;
 
 import java.util.List;
 
-public class LinesBetweenChunksBiFilter
-        extends BiFilter<Rectangle> {
+public class LinesBetweenChunksBiHeuristic
+        extends BiHeuristic<Rectangle> {
     private List<Ruling> lines;
 
-    public LinesBetweenChunksBiFilter(List<Ruling> lines) {
+    public LinesBetweenChunksBiHeuristic(List<Ruling> lines) {
         super(Orientation.BOTH);
         this.lines = lines;
     }
 
+    public LinesBetweenChunksBiHeuristic(Orientation orientation) {
+        super(orientation);
+    }
+
     @Override
-    public boolean filter(Rectangle first, Rectangle second) {
+    public boolean test(Rectangle first, Rectangle second) {
         return lines.stream().filter(line -> {
             float   rx1 = first.getRight();
             float   lx2 = second.getLeft();

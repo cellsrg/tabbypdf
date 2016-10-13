@@ -1,12 +1,12 @@
 package ru.icc.cells.utils.processing.filter.bi;
 
 import ru.icc.cells.common.Rectangle;
-import ru.icc.cells.utils.processing.filter.ChunkFilter;
+import ru.icc.cells.utils.processing.filter.Heuristic;
 
-public abstract class BiFilter<T extends Rectangle> implements ChunkFilter {
+public abstract class BiHeuristic<T extends Rectangle> implements Heuristic {
     private final Orientation orientation;
 
-    public BiFilter(Orientation orientation) {
+    public BiHeuristic(Orientation orientation) {
         this.orientation = orientation;
     }
 
@@ -14,5 +14,5 @@ public abstract class BiFilter<T extends Rectangle> implements ChunkFilter {
         return orientation;
     }
 
-    public abstract boolean filter(T first, T second);
+    public abstract boolean test(T first, T second);
 }

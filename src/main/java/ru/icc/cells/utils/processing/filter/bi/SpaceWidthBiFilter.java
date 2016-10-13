@@ -4,7 +4,7 @@ import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Font;
 import ru.icc.cells.common.TextChunk;
 
-public class SpaceWidthBiFilter extends BiFilter<TextChunk> {
+public class SpaceWidthBiFilter extends BiHeuristic<TextChunk> {
     private float spaceWidthMultiplier;
 
     public SpaceWidthBiFilter() {
@@ -17,7 +17,7 @@ public class SpaceWidthBiFilter extends BiFilter<TextChunk> {
     }
 
     @Override
-    public boolean filter(TextChunk first, TextChunk second) {
+    public boolean test(TextChunk first, TextChunk second) {
         if (first.getRight() >= second.getLeft()) return true;
         /* Creating a chunk with only " " content and taking its width */
         //        float spaceWidth    = leftChunk.getCharSpaceWidth();

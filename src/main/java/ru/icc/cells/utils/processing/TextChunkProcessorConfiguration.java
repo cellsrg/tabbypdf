@@ -1,31 +1,42 @@
 package ru.icc.cells.utils.processing;
 
-import ru.icc.cells.utils.processing.filter.ChunkFilter;
-import ru.icc.cells.utils.processing.filter.bi.BiFilter;
-import ru.icc.cells.utils.processing.filter.tri.TriFilter;
+import ru.icc.cells.utils.processing.filter.Heuristic;
+import ru.icc.cells.utils.processing.filter.bi.BiHeuristic;
+import ru.icc.cells.utils.processing.filter.tri.TriHeuristic;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TextChunkProcessorConfiguration {
-    private List<BiFilter>  biFilters  = new ArrayList<>();
-    private List<TriFilter> triFilters = new ArrayList<>();
+    private List<BiHeuristic>  biHeuristics     = new ArrayList<>();
+    private List<TriHeuristic> triHeuristics    = new ArrayList<>();
+    private List<String>       stringsToReplace = new ArrayList<>();
 
-    public TextChunkProcessorConfiguration addFilter(ChunkFilter filter) {
+    public TextChunkProcessorConfiguration addFilter(Heuristic filter) {
         Class<?> filterClass = filter.getClass();
-        if (filterClass.getSuperclass().equals(BiFilter.class)) {
-            biFilters.add(((BiFilter) filter));
-        } else if (filterClass.getSuperclass().equals(TriFilter.class)) {
-            triFilters.add(((TriFilter) filter));
+        if (filterClass.getSuperclass().equals(BiHeuristic.class)) {
+            biHeuristics.add(((BiHeuristic) filter));
+        } else if (filterClass.getSuperclass().equals(TriHeuristic.class)) {
+            triHeuristics.add(((TriHeuristic) filter));
         }
         return this;
     }
 
-    public List<BiFilter> getBiFilters() {
-        return biFilters;
+    public TextChunkProcessorConfiguration addStringsToReplace(String[] strings) {
+        stringsToReplace.addAll(Arrays.asList(strings));
+        return this;
     }
 
-    public List<TriFilter> getTriFilters() {
-        return triFilters;
+    public List<BiHeuristic> getBiHeuristics() {
+        return biHeuristics;
+    }
+
+    public List<TriHeuristic> getTriHeuristics() {
+        return triHeuristics;
+    }
+
+    public List<String> getStringsToReplace() {
+        return stringsToReplace;
     }
 }
