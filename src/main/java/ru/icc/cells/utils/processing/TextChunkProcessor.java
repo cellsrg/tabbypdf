@@ -10,6 +10,7 @@ import ru.icc.cells.utils.processing.filter.bi.HorizontalPositionBiHeuristic;
 import ru.icc.cells.utils.processing.filter.tri.TriHeuristic;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -33,14 +34,29 @@ public class TextChunkProcessor {
     }
 
     private void prepareChunks(List<TextChunk> chunks) {
-        for (int i = 0; i < chunks.size(); i++) {
-            TextChunk chunk     = chunks.get(i);
-            String    chunkText = chunk.getText();
+        Iterator<TextChunk> chunkIterator = chunks.iterator();
+        for (TextChunk chunk = chunkIterator.next(); chunkIterator.hasNext(); chunk = chunkIterator.next()) {
+            String chunkText = chunk.getText();
+            for (String strToReplace : configuration.getStringsToReplace()) {
+                if (!strToReplace.equals(" ")) {
+                    chunkText = chunkText.replaceAll(strToReplace, "");
+                }
+            }
+            if (chunkText.isEmpty()) {
+                chunkIterator.remove();
+            }
+        }
+    }
+
+    private void prepareBlocks(List<TextBlock> blocks) {
+        Iterator<TextBlock> blockIterator = blocks.iterator();
+        for (TextBlock block = blockIterator.next(); blockIterator.hasNext(); block = blockIterator.next()) {
+            String chunkText = block.getText();
             for (String strToReplace : configuration.getStringsToReplace()) {
                 chunkText = chunkText.replaceAll(strToReplace, "");
             }
             if (chunkText.isEmpty()) {
-                chunks.remove(i--);
+                blockIterator.remove();
             }
         }
     }
@@ -65,7 +81,7 @@ public class TextChunkProcessor {
             textBlocks = joinBlocks(textBlocks, horizontalBiHeuristics, horizontalTriHeuristics);
             diff = diff - textBlocks.size();
         }
-        textBlocks = joinBlocks(textBlocks, verticalBiHeuristics, verticalTriHeuristics);
+        prepareBlocks(textBlocks);
         normalize(textBlocks);
         diff = textBlocks.size();
         while (diff != 0) {
