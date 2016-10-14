@@ -7,11 +7,12 @@ import ru.icc.cells.common.TextLine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Detects the bounding of table
  */
-public class TableBoxDetector implements Detector<TableBox,TableRegion> {
+public class TableBoxDetector implements Detector<TableBox, TableRegion> {
 
     private List<TextLine> pageTextLines;
     private int            maxNonTableLinesBetweenRegions;
@@ -24,6 +25,12 @@ public class TableBoxDetector implements Detector<TableBox,TableRegion> {
 
     public TableBoxDetector(List<TextLine> pageTextLines, int maxNonTableLinesBetweenRegions,
                             int minProjectionIntersection, double gapThreshold) {
+        if (minProjectionIntersection < 0)
+            throw new IllegalArgumentException("minProjectionIntersection should be greater or equal 0");
+        if (maxNonTableLinesBetweenRegions < 0)
+            throw new IllegalArgumentException("maxNonTableLinesBetweenRegions should be greater or equal 0");
+        if (gapThreshold <= 0 || gapThreshold > 1) throw new IllegalArgumentException(
+                "gapThreshold should be in the range from 0 to 1, excluding left border");
         this.pageTextLines = pageTextLines;
         this.maxNonTableLinesBetweenRegions = maxNonTableLinesBetweenRegions;
         this.minProjectionIntersection = minProjectionIntersection;
@@ -55,7 +62,9 @@ public class TableBoxDetector implements Detector<TableBox,TableRegion> {
     }
 
     @Override
-    public List<TableBox> detect(List<TableRegion> regions) {
+    public List<TableBox> detect(List<TableRegion> tableRegions) {
+        List<TableRegion> regions =
+                tableRegions.stream().filter(region -> region.getTextLines().size() > 1).collect(Collectors.toList());
         List<TableBox> tableBoxes = new ArrayList<>();
         TableBox       tableBox   = null;
         TableRegion    prevRegion = null;
@@ -65,7 +74,7 @@ public class TableBoxDetector implements Detector<TableBox,TableRegion> {
             tableBox.add(regions.get(0));
             tableBoxes.add(tableBox);
             return tableBoxes;
-        }else if (regions.size()==0){
+        } else if (regions.size() == 0) {
             return tableBoxes;
         }
 

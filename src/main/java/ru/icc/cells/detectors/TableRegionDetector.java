@@ -19,14 +19,20 @@ public class TableRegionDetector implements Detector<TableRegion, TextLine> {
     /**
      * Threshold value for X-intersection of gaps
      */
-    private int minProjectionIntersection;
+    private int   minProjectionIntersection;
+    private float minWhitespaceWidth;
 
     public TableRegionDetector() {
-        this(0);
+        this(0, 0.1f);
     }
 
-    public TableRegionDetector(int minProjectionIntersection) {
+    public TableRegionDetector(int minProjectionIntersection, float minWhitespaceWidth) {
+        if (minProjectionIntersection < 0)
+            throw new IllegalArgumentException("minProjectionIntersection should be greater or equal 0");
+        if (minWhitespaceWidth <= 0 || minWhitespaceWidth >= 1) throw new IllegalArgumentException(
+                "minWhitespaceWidth should be in the range from 0 to 1, excluding borders");
         this.minProjectionIntersection = minProjectionIntersection;
+        this.minWhitespaceWidth = minWhitespaceWidth;
     }
 
     /**
@@ -41,6 +47,14 @@ public class TableRegionDetector implements Detector<TableRegion, TextLine> {
      */
     public void setMinProjectionIntersection(int minProjectionIntersection) {
         this.minProjectionIntersection = minProjectionIntersection;
+    }
+
+    public float getMinWhitespaceWidth() {
+        return minWhitespaceWidth;
+    }
+
+    public void setMinWhitespaceWidth(float minWhitespaceWidth) {
+        this.minWhitespaceWidth = minWhitespaceWidth;
     }
 
     @Override
@@ -88,10 +102,15 @@ public class TableRegionDetector implements Detector<TableRegion, TextLine> {
                         rectangles.addAll(textBlocks2);
                         return rectangles;
                     }).orElse(new ArrayList<>());
-            region.getGaps()
-                  .addAll(/*g(region.getTextLines())*/PageLayoutAlgorithm.getVerticalGaps(allBlocks));
+            region.getGaps().addAll(/*g(region.getTextLines())*/PageLayoutAlgorithm.getVerticalGaps(allBlocks));
         }
         return tableRegions;
+    }
+
+    private boolean whitespaceThreshold(TextLine textLine) {
+        float gapWidthSum =
+                textLine.getGaps().stream().map(gap -> gap.getRight() - gap.getLeft()).reduce(Float::sum).orElse(0f);
+        return gapWidthSum / (textLine.getRight() - textLine.getLeft()) >= minWhitespaceWidth;
     }
 
     /**
@@ -117,6 +136,7 @@ public class TableRegionDetector implements Detector<TableRegion, TextLine> {
      */
     private boolean isTableLine(TextLine textLine) {
         if (textLine.getGaps().size() < 3) return false;
+        if (!whitespaceThreshold(textLine)) return false;
         for (Rectangle rectangle : textLine.getGaps()) {
             if (rectangle.getBottom() != textLine.getBottom()) {
                 return false;

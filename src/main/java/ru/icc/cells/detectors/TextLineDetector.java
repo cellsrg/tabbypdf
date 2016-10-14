@@ -15,7 +15,7 @@ public class TextLineDetector implements Detector<TextLine, TextBlock> {
     @Override
     public List<TextLine> detect(List<TextBlock> textBlocks) {
         List<TextBlock> sortedTextBlocks = new ArrayList<>(textBlocks);
-        sortedTextBlocks.sort(PageLayoutAlgorithm.RECTANGLE_COMPARATOR);
+//        sortedTextBlocks.sort(PageLayoutAlgorithm.RECTANGLE_COMPARATOR);
         List<TextLine> textLines     = new ArrayList<>();
         TextLine       textLine      = null;
         TextBlock      previousBlock = null;
