@@ -10,13 +10,15 @@ public class Page extends Rectangle {
     private final List<TextChunk> characterChunks;
     private final List<TextChunk> wordChunks;
     private final List<Ruling>    rulings;
+    private final List<Rectangle> imageRegions;
 
     public Page(List<TextChunk> originChunks, List<TextChunk> characterChunks, List<TextChunk> wordChunks,
-                List<Ruling> rulings) {
+                List<Ruling> rulings,List<Rectangle> imageRegions) {
         this.originChunks = originChunks;
         this.characterChunks = characterChunks;
         this.wordChunks = wordChunks;
         this.rulings = rulings;
+        this.imageRegions = imageRegions;
     }
 
     /**
@@ -45,5 +47,9 @@ public class Page extends Rectangle {
      */
     public List<TextChunk> getWordChunks() {
         return wordChunks;
+    }
+
+    public List<Rectangle> getImageRegions() {
+        return imageRegions;
     }
 }

@@ -19,6 +19,7 @@ public class PdfContentExtractor {
     public PdfContentExtractor(String path) throws IOException {
         this.reader = new PdfReader(path);
         this.parser = new PdfReaderContentParser(reader);
+        processImageContent(1);
     }
 
     public PdfContentExtractor(PdfReader reader) {
@@ -32,7 +33,7 @@ public class PdfContentExtractor {
 
     public Page getPageContent(int pageNumber) throws IOException {
         return new Page(getChunks(pageNumber), getCharacterChunks(pageNumber), getWordChunks(pageNumber),
-                        getRulings(pageNumber));
+                        getRulings(pageNumber), getImageRegions(pageNumber));
     }
 
     public List<TextChunk> getWordChunks(int pageNumber) throws IOException {
@@ -69,6 +70,10 @@ public class PdfContentExtractor {
         return lines;
     }
 
+    public List<ru.icc.cells.common.Rectangle> getImageRegions(int pageNumber) throws IOException {
+        return processImageContent(pageNumber).getImageRegions();
+    }
+
     private Ruling mapRectangleToRuling(Rectangle rectangle) {
         float  height = Math.abs(rectangle.getTop() - rectangle.getBottom());
         float  width  = Math.abs(rectangle.getRight() - rectangle.getLeft());
@@ -96,5 +101,11 @@ public class PdfContentExtractor {
                                                     reader.getPageSize(pageNumber).getWidth());
         parser.processContent(pageNumber, textExtractionStrategy);
         return textExtractionStrategy;
+    }
+
+    private ImageRegionExtractionStrategy processImageContent(int pageNumber) throws IOException {
+        ImageRegionExtractionStrategy strategy = new ImageRegionExtractionStrategy();
+        parser.processContent(pageNumber, strategy);
+        return strategy;
     }
 }
