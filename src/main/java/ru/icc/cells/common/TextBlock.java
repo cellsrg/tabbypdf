@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Basic container from text chunks. Contains chunks that are in the same table cell
  */
-public class TextBlock extends Rectangle {
+public class TextBlock extends Rectangle implements TextContainer {
 
     public TextBlock() {
         super();
@@ -55,6 +55,7 @@ public class TextBlock extends Rectangle {
         return chunks.isEmpty();
     }
 
+    @Override
     public String getText() {
         StringBuilder stringBuilder = new StringBuilder();
         for (TextChunk chunk : chunks) {

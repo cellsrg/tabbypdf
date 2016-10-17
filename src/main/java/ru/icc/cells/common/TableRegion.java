@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Contains text lines belongs to same table
  */
-public class TableRegion extends Rectangle {
+public class TableRegion extends Rectangle implements TextContainer{
     private List<TextLine> textLines = new ArrayList<>();
     private List<Rectangle> gaps = new ArrayList<>();
 
@@ -42,10 +42,12 @@ public class TableRegion extends Rectangle {
         }
     }
 
+    @Override
     public String getText() {
         StringBuilder stringBuilder = new StringBuilder();
         for (TextLine textLine : textLines) {
             stringBuilder.append(textLine.getText());
+            stringBuilder.append(System.lineSeparator());
         }
         return stringBuilder.toString();
     }
