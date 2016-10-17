@@ -19,9 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by Андрей on 23.09.2016.
- */
 public class Example {
     public static final String TEST_PDF_DIR = "src/test/resources/pdf/";
     public static final String SAVE_PDF_DIR = "src/test/resources/pdf/edit/";
@@ -31,7 +28,7 @@ public class Example {
         for (File file : folder.listFiles(File::isFile)) {
             processFile(file);
         }
-        //        processFile(new File("src/test/resources/pdf/Aeroflot_FS_2006.10.pdf"));
+//                                processFile(new File("src/test/resources/pdf/Aeroflot_FS_2006.10.pdf"));
     }
 
     private static TextChunkProcessorConfiguration getConfiguration() {
@@ -44,12 +41,11 @@ public class Example {
                             .addFilter(new CutInAfterTriHeuristic())
                             .addFilter(new CutInBeforeTriHeuristic())
                             /*COMMON FILTERS*/
-                            //.addFilter(new LinesBetweenChunksBiHeuristic(page.getRulings()))
                             .addFilter(new EqualFontFamilyBiHeuristic(Heuristic.Orientation.VERTICAL))
                             .addFilter(new EqualFontAttributesBiHeuristic(Heuristic.Orientation.VERTICAL))
                             .addFilter(new EqualFontSizeBiHeuristic(Heuristic.Orientation.VERTICAL))
                             /*REPLACE STRINGS*/
-                            .addStringsToReplace(new String[]{"•", "", " ", "_"});
+                            .addStringsToReplace(new String[]{"•", "", " ", "_", "\u0002"/**/});
     }
 
     public static void processFile(File file) {
@@ -71,28 +67,20 @@ public class Example {
                 List<TableRegion> tableRegions = new TableRegionDetector().detect(textLines);
                 List<TableBox>    tableBoxes   = new TableBoxDetector(textLines).detect(tableRegions);
 
-                //writer.setColor(Color.BLACK);
-                //page.getOriginChunks().forEach(writer::drawRect);
-                writer.setColor(Color.ORANGE);
-                textBlocks.forEach(writer::drawRect);
+//                writer.setColor(Color.GREEN);
+//                writer.drawRects(page.getImageRegions());
 
+                writer.setColor(Color.PINK);
+                writer.drawRects(page.getOriginChunks());
+
+                writer.setColor(Color.ORANGE);
+                writer.drawRects(textBlocks);
+
+                writer.setColor(Color.RED);
+                writer.drawRects(tableBoxes);
                 for (TableBox tableBox : tableBoxes) {
-                    writer.setColor(Color.RED);
-                    writer.drawRect(tableBox);
-                    for (TableRegion tableRegion : tableBox.getTableRegions()) {
-                        writer.setColor(Color.BLUE);
-                        writer.drawRect(tableRegion);
-                        for (TextLine textLine : tableRegion.getTextLines()) {
-                            writer.setColor(Color.GREEN);
-                            writer.drawRect(textLine);
-                            writer.setColor(Color.ORANGE);
-                            textLine.getGaps().forEach(writer::drawRect);
-                            writer.setColor(Color.PINK);
-                            textLine.getTextBlocks().forEach(writer::drawRect);
-                        }
-                        writer.setColor(Color.CYAN);
-                        tableRegion.getGaps().forEach(writer::drawRect);
-                    }
+                    writer.setColor(Color.BLUE);
+                    writer.drawRects(tableBox.getTableRegions());
                 }
             }
             writer.close();
