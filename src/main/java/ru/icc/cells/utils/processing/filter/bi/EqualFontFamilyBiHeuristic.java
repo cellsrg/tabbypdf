@@ -1,9 +1,10 @@
 package ru.icc.cells.utils.processing.filter.bi;
 
+import ru.icc.cells.common.TextBlock;
 import ru.icc.cells.common.TextChunk;
 import ru.icc.cells.utils.content.FontUtils;
 
-public class EqualFontFamilyBiHeuristic extends BiHeuristic<TextChunk> {
+public class EqualFontFamilyBiHeuristic extends BiHeuristic<TextBlock> {
 
     public EqualFontFamilyBiHeuristic() {
         super(Orientation.BOTH);
@@ -14,13 +15,19 @@ public class EqualFontFamilyBiHeuristic extends BiHeuristic<TextChunk> {
     }
 
     @Override
-    public boolean test(TextChunk first, TextChunk second) {
-        String[] firstChunkFontFamilies  = FontUtils.getFontFamilies(first);
-        String[] secondChunkFontFamilies = FontUtils.getFontFamilies(second);
-        if (firstChunkFontFamilies.length!=secondChunkFontFamilies.length) return false;
-        for (int i = 0; i < firstChunkFontFamilies.length; i++) {
-            if (!firstChunkFontFamilies[i].equals(secondChunkFontFamilies[i])) return false;
+    public boolean test(TextBlock first, TextBlock second) {
+        boolean result = true;
+        for (TextChunk chunk : first.getChunks()) {
+            for (TextChunk textChunk : second.getChunks()) {
+                String[] firstChunkFontFamilies  = FontUtils.getFontFamilies(chunk);
+                String[] secondChunkFontFamilies = FontUtils.getFontFamilies(textChunk);
+                if (firstChunkFontFamilies.length != secondChunkFontFamilies.length) result = false;
+                for (int i = 0; i < firstChunkFontFamilies.length; i++) {
+                    if (!firstChunkFontFamilies[i].equals(secondChunkFontFamilies[i])) result = false;
+                }
+                if (result) return true;
+            }
         }
-        return true;
+        return result;
     }
 }

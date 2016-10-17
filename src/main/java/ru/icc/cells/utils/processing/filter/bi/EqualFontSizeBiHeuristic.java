@@ -1,8 +1,9 @@
 package ru.icc.cells.utils.processing.filter.bi;
 
+import ru.icc.cells.common.TextBlock;
 import ru.icc.cells.common.TextChunk;
 
-public class EqualFontSizeBiHeuristic extends BiHeuristic<TextChunk> {
+public class EqualFontSizeBiHeuristic extends BiHeuristic<TextBlock> {
     public EqualFontSizeBiHeuristic() {
         super(Orientation.BOTH);
     }
@@ -12,7 +13,12 @@ public class EqualFontSizeBiHeuristic extends BiHeuristic<TextChunk> {
     }
 
     @Override
-    public boolean test(TextChunk first, TextChunk second) {
-        return first.getFontSize() == second.getFontSize();
+    public boolean test(TextBlock first, TextBlock second) {
+        for (TextChunk chunk : first.getChunks()) {
+            for (TextChunk textChunk : second.getChunks()) {
+                if (chunk.getFontSize() == textChunk.getFontSize()) return true;
+            }
+        }
+        return false;
     }
 }

@@ -15,27 +15,44 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-/**
- * Created by Андрей on 23.09.2016.
- */
 public class TextChunkProcessor {
     private Page                            page;
     private TextChunkProcessorConfiguration configuration;
+    private List<BiHeuristic>               horizontalBiHeuristics;
+    private List<TriHeuristic>              horizontalTriHeuristics;
+    private List<BiHeuristic>               verticalBiHeuristics;
+    private List<TriHeuristic>              verticalTriHeuristics;
 
     public TextChunkProcessor(Page page, TextChunkProcessorConfiguration configuration) {
         this.page = page;
         this.configuration = configuration;
+        horizontalBiHeuristics = getBiHeuristics(
+                biHeuristic -> biHeuristic.getOrientation() == Heuristic.Orientation.HORIZONTAL ||
+                               biHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
+        horizontalTriHeuristics = getTriHeuristics(
+                triHeuristic -> triHeuristic.getOrientation() == Heuristic.Orientation.HORIZONTAL ||
+                                triHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
+        verticalBiHeuristics = getBiHeuristics(
+                biHeuristic -> biHeuristic.getOrientation() == Heuristic.Orientation.VERTICAL ||
+                               biHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
+        verticalTriHeuristics = getTriHeuristics(
+                triHeuristic -> triHeuristic.getOrientation() == Heuristic.Orientation.VERTICAL ||
+                                triHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
     }
 
     public List<TextBlock> process() {
-        List<TextChunk> chunks = new ArrayList<>(page.getOriginChunks());
+        List<TextBlock> chunks = page.getOriginChunks().stream().map(chunk -> {
+            TextBlock block = new TextBlock();
+            block.add(chunk);
+            return block;
+        }).collect(Collectors.toList());
         prepareChunks(chunks);
         return join(chunks);
     }
 
-    private void prepareChunks(List<TextChunk> chunks) {
-        Iterator<TextChunk> chunkIterator = chunks.iterator();
-        for (TextChunk chunk = chunkIterator.next(); chunkIterator.hasNext(); chunk = chunkIterator.next()) {
+    private void prepareChunks(List<TextBlock> chunks) {
+        Iterator<TextBlock> chunkIterator = chunks.iterator();
+        for (TextBlock chunk = chunkIterator.next(); chunkIterator.hasNext(); chunk = chunkIterator.next()) {
             String chunkText = chunk.getText();
             for (String strToReplace : configuration.getStringsToReplace()) {
                 if (!strToReplace.equals(" ")) {
@@ -61,21 +78,9 @@ public class TextChunkProcessor {
         }
     }
 
-    private List<TextBlock> join(List<TextChunk> chunks) {
-        List<TextBlock> textBlocks = joinHorizontalChunks(chunks);
+    private List<TextBlock> join(List<TextBlock> chunks) {
+        List<TextBlock> textBlocks = joinBlocks(chunks, horizontalBiHeuristics, horizontalTriHeuristics);
         int             diff       = textBlocks.size();
-        List<BiHeuristic> horizontalBiHeuristics = getBiHeuristics(
-                biHeuristic -> biHeuristic.getOrientation() == Heuristic.Orientation.HORIZONTAL ||
-                               biHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
-        List<TriHeuristic> horizontalTriHeuristics = getTriHeuristics(
-                triHeuristic -> triHeuristic.getOrientation() == Heuristic.Orientation.HORIZONTAL ||
-                                triHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
-        List<BiHeuristic> verticalBiHeuristics = getBiHeuristics(
-                biHeuristic -> biHeuristic.getOrientation() == Heuristic.Orientation.VERTICAL ||
-                               biHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
-        List<TriHeuristic> verticalTriHeuristics = getTriHeuristics(
-                triHeuristic -> triHeuristic.getOrientation() == Heuristic.Orientation.VERTICAL ||
-                                triHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
         while (diff != 0) {
             diff = textBlocks.size();
             textBlocks = joinBlocks(textBlocks, horizontalBiHeuristics, horizontalTriHeuristics);
@@ -109,12 +114,15 @@ public class TextChunkProcessor {
             textBlock.add(firstBlock);
 
             for (BiHeuristic biHeuristic : biHeuristics) {
-                boolean heuristicResult;
-                try { //if i only could get generic type
+                boolean heuristicResult = true;
+                if (biHeuristic.getTargetClass().equals(Rectangle.class) ||
+                    biHeuristic.getTargetClass().equals(TextBlock.class)) {
                     heuristicResult = biHeuristic.test(firstBlock, secondBlock);
-                } catch (ClassCastException ex) {
+                } else if (biHeuristic.getTargetClass().equals(TextChunk.class)) {
                     heuristicResult = biHeuristic.test(firstBlock.getChunks().get(firstBlock.getChunks().size() - 1),
                                                        secondBlock.getChunks().get(0));
+                } else {
+                    System.out.println(biHeuristic.getTargetClass());
                 }
                 if (!heuristicResult) {
                     result.add(textBlock);
@@ -149,59 +157,6 @@ public class TextChunkProcessor {
         return result;
     }
 
-    private List<TextBlock> joinHorizontalChunks(List<TextChunk> chunks) {
-        List<TextBlock> result = new ArrayList<>();
-
-        TextBlock textBlock = null;
-        join_process:
-        for (int i = 0; i < chunks.size() - 1; i++) {
-            if (textBlock == null) {
-                textBlock = new TextBlock();
-            }
-            TextChunk leftChunk  = chunks.get(i);
-            TextChunk rightChunk = chunks.get(i + 1);
-            textBlock.add(leftChunk);
-            List<BiHeuristic> horizontalBiHeuristics = getBiHeuristics(
-                    biHeuristic -> biHeuristic.getOrientation() == Heuristic.Orientation.HORIZONTAL ||
-                                   biHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
-            for (BiHeuristic horizontalBiHeuristic : horizontalBiHeuristics) {
-                if (!horizontalBiHeuristic.test(leftChunk, rightChunk)) {
-                    result.add(textBlock);
-                    textBlock = null;
-                    continue join_process;
-                }
-            }
-            List<TriHeuristic> horizontalTriHeuristics = getTriHeuristics(
-                    triHeuristic -> triHeuristic.getOrientation() == Heuristic.Orientation.HORIZONTAL ||
-                                    triHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
-            for (TriHeuristic horizontalTriHeuristic : horizontalTriHeuristics) {
-                if (horizontalTriHeuristic.getHeuristicType() == TriHeuristic.TriHeuristicType.AFTER) {
-                    if (i + 2 < chunks.size() &&
-                        !horizontalTriHeuristic.test(leftChunk, rightChunk, chunks.get(i + 2))) {
-                        result.add(textBlock);
-                        textBlock = null;
-                        continue join_process;
-                    }
-                } else if (horizontalTriHeuristic.getHeuristicType() == TriHeuristic.TriHeuristicType.BEFORE) {
-                    if (i - 1 >= 0 && !horizontalTriHeuristic.test(chunks.get(i - 1), leftChunk, rightChunk)) {
-                        result.add(textBlock);
-                        textBlock = null;
-                        continue join_process;
-                    }
-                }
-            }
-        }
-        if (textBlock == null) {
-            textBlock = new TextBlock();
-            textBlock.add(chunks.get(chunks.size() - 1));
-            result.add(textBlock);
-        } else {
-            textBlock.add(chunks.get(chunks.size() - 1));
-            result.add(textBlock);
-        }
-        return result;
-    }
-
     private List<BiHeuristic> getBiHeuristics(Predicate<BiHeuristic> predicate) {
         return configuration.getBiHeuristics().stream().filter(predicate).collect(Collectors.toList());
     }
@@ -215,8 +170,7 @@ public class TextChunkProcessor {
             Rectangle left = data.get(i);
             for (int j = i + 2; j < data.size(); j++) {
                 Rectangle right = data.get(j);
-                if (((new HorizontalPositionBiHeuristic()).test(left, right) /*&& (isVerticalPositionValid(left, right)
-                        && isDistanceLessEqualsHeight(left, right))*/) && left.getRight() >= right.getLeft()) {
+                if (new HorizontalPositionBiHeuristic().test(left, right) && left.getRight() >= right.getLeft()) {
                     left.setRight(right.getLeft() - 5);
                 }
             }
