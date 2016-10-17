@@ -23,6 +23,8 @@ public interface PdfWriter {
      */
     <T extends ru.icc.cells.common.Rectangle> void drawRect(T rect);
 
+    <T extends ru.icc.cells.common.Rectangle> void drawRects(java.util.List<T> rects);
+
     /**
      * Draw ruling
      * @param ruling

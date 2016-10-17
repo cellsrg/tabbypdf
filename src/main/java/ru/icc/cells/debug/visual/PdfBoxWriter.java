@@ -3,12 +3,13 @@ package ru.icc.cells.debug.visual;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import ru.icc.cells.common.Ruling;
 import ru.icc.cells.common.Rectangle;
+import ru.icc.cells.common.Ruling;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * A PdfBox implementation of PdfWriter
@@ -91,6 +92,19 @@ public class PdfBoxWriter implements PdfWriter, Closeable {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public <T extends Rectangle> void drawRects(List<T> rects) {
+        try {
+            for (T rect : rects) {
+                contentStream.addRect(rect.getLeft(), rect.getBottom(), Math.abs(rect.getRight() - rect.getLeft()),
+                                      Math.abs(rect.getTop() - rect.getBottom()));
+                contentStream.stroke();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
