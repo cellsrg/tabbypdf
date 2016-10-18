@@ -27,6 +27,6 @@ public class EqualFontAttributesBiHeuristic extends BiHeuristic<TextBlock> {
                 if (result) return true;
             }
         }
-        return true;
+        return result;
     }
 }
