@@ -11,11 +11,11 @@ import java.util.List;
 /**
  * Detects text lines from text blocks
  */
-public class TextLineDetector implements Detector<TextLine, TextBlock> {
+class TextLineDetector implements Detector<TextLine, TextBlock> {
     @Override
     public List<TextLine> detect(List<TextBlock> textBlocks) {
         List<TextBlock> sortedTextBlocks = new ArrayList<>(textBlocks);
-//        sortedTextBlocks.sort(PageLayoutAlgorithm.RECTANGLE_COMPARATOR);
+        sortedTextBlocks.sort(PageLayoutAlgorithm.RECTANGLE_COMPARATOR);
         List<TextLine> textLines     = new ArrayList<>();
         TextLine       textLine      = null;
         TextBlock      previousBlock = null;
@@ -34,14 +34,20 @@ public class TextLineDetector implements Detector<TextLine, TextBlock> {
             previousBlock = sortedTextBlocks.get(i - 1);
             TextBlock currentBlock = sortedTextBlocks.get(i);
             textLine.add(previousBlock);
-            if (!vProjection(previousBlock, currentBlock)) {
+            if (!vProjection(textLine, currentBlock)) {
                 textLine.addGaps(PageLayoutAlgorithm.getVerticalGaps(textLine.getTextBlocks()));
                 textLines.add(textLine);
                 textLine = null;
             }
         }
         TextBlock lastBlock = sortedTextBlocks.get(sortedTextBlocks.size() - 1);
-        if (vProjection(previousBlock, lastBlock)) {
+        boolean projection;
+        if (textLine!=null&&!textLine.getTextBlocks().isEmpty()){
+            projection = vProjection(textLine, lastBlock);
+        }else {
+            projection = vProjection(previousBlock, lastBlock);
+        }
+        if (projection) {
             textLine.add(lastBlock);
             textLine.addGaps(PageLayoutAlgorithm.getVerticalGaps(textLine.getTextBlocks()));
             textLines.add(textLine);

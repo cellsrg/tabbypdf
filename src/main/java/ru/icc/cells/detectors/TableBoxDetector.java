@@ -7,12 +7,11 @@ import ru.icc.cells.common.TextLine;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Detects the bounding of table
  */
-public class TableBoxDetector implements Detector<TableBox, TableRegion> {
+class TableBoxDetector implements Detector<TableBox, TableRegion> {
 
     private List<TextLine> pageTextLines;
     private int            maxNonTableLinesBetweenRegions;
@@ -63,8 +62,7 @@ public class TableBoxDetector implements Detector<TableBox, TableRegion> {
 
     @Override
     public List<TableBox> detect(List<TableRegion> tableRegions) {
-        List<TableRegion> regions =
-                tableRegions.stream().filter(region -> region.getTextLines().size() > 1).collect(Collectors.toList());
+        List<TableRegion> regions = new ArrayList<>(tableRegions);
         List<TableBox> tableBoxes = new ArrayList<>();
         TableBox       tableBox   = null;
         TableRegion    prevRegion = null;

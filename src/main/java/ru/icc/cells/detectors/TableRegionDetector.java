@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 /**
  * Detects table regions from text lines
  */
-public class TableRegionDetector implements Detector<TableRegion, TextLine> {
+class TableRegionDetector implements Detector<TableRegion, TextLine> {
 
     /**
      * Threshold value for X-intersection of gaps
