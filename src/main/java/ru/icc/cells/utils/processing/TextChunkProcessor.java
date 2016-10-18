@@ -10,6 +10,7 @@ import ru.icc.cells.utils.processing.filter.bi.HorizontalPositionBiHeuristic;
 import ru.icc.cells.utils.processing.filter.tri.TriHeuristic;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -17,15 +18,15 @@ import java.util.stream.Collectors;
 
 public class TextChunkProcessor {
     private Page                            page;
-    private TextChunkProcessorConfiguration configuration;
+    private TextChunkProcessorConfiguration cnf;
     private List<BiHeuristic>               horizontalBiHeuristics;
     private List<TriHeuristic>              horizontalTriHeuristics;
     private List<BiHeuristic>               verticalBiHeuristics;
     private List<TriHeuristic>              verticalTriHeuristics;
 
-    public TextChunkProcessor(Page page, TextChunkProcessorConfiguration configuration) {
+    public TextChunkProcessor(Page page, TextChunkProcessorConfiguration cnf) {
         this.page = page;
-        this.configuration = configuration;
+        this.cnf = cnf;
         horizontalBiHeuristics = getBiHeuristics(
                 biHeuristic -> biHeuristic.getOrientation() == Heuristic.Orientation.HORIZONTAL ||
                                biHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
@@ -47,14 +48,16 @@ public class TextChunkProcessor {
             return block;
         }).collect(Collectors.toList());
         prepareChunks(chunks);
-        return join(chunks);
+        List<TextBlock> blocks = join(chunks);
+        removeColons(blocks);
+        return blocks;
     }
 
     private void prepareChunks(List<TextBlock> chunks) {
         Iterator<TextBlock> chunkIterator = chunks.iterator();
         for (TextBlock chunk = chunkIterator.next(); chunkIterator.hasNext(); chunk = chunkIterator.next()) {
             String chunkText = chunk.getText();
-            for (String strToReplace : configuration.getStringsToReplace()) {
+            for (String strToReplace : cnf.getStringsToReplace()) {
                 if (!strToReplace.equals(" ")) {
                     chunkText = chunkText.replaceAll(strToReplace, "");
                 }
@@ -69,7 +72,7 @@ public class TextChunkProcessor {
         Iterator<TextBlock> blockIterator = blocks.iterator();
         for (TextBlock block = blockIterator.next(); blockIterator.hasNext(); block = blockIterator.next()) {
             String chunkText = block.getText();
-            for (String strToReplace : configuration.getStringsToReplace()) {
+            for (String strToReplace : cnf.getStringsToReplace()) {
                 chunkText = chunkText.replaceAll(strToReplace, "");
             }
             if (chunkText.isEmpty()) {
@@ -158,11 +161,11 @@ public class TextChunkProcessor {
     }
 
     private List<BiHeuristic> getBiHeuristics(Predicate<BiHeuristic> predicate) {
-        return configuration.getBiHeuristics().stream().filter(predicate).collect(Collectors.toList());
+        return cnf.getBiHeuristics().stream().filter(predicate).collect(Collectors.toList());
     }
 
     private List<TriHeuristic> getTriHeuristics(Predicate<TriHeuristic> predicate) {
-        return configuration.getTriHeuristics().stream().filter(predicate).collect(Collectors.toList());
+        return cnf.getTriHeuristics().stream().filter(predicate).collect(Collectors.toList());
     }
 
     private void normalize(List<? extends Rectangle> data) {
@@ -175,5 +178,22 @@ public class TextChunkProcessor {
                 }
             }
         }
+    }
+
+    private void removeColons(List<TextBlock> blocks) {
+        TextBlock lowestBlock = Collections.min(blocks, (b1, b2) -> Float.compare(b1.getBottom(), b2.getBottom()));
+        TextBlock highestBlock = Collections.max(blocks, (b1, b2) -> Float.compare(b1.getBottom(), b2.getBottom()));
+        List<TextBlock> colonBlocks = getBlocksOnSameLine(blocks, lowestBlock);
+//        colonBlocks.addAll(getBlocksOnSameLine(blocks, highestBlock));
+        colonBlocks.add(lowestBlock);
+//        colonBlocks.add(highestBlock);
+        blocks.removeAll(colonBlocks);
+    }
+
+    public static List<TextBlock> getBlocksOnSameLine(List<TextBlock> blocks, TextBlock as) {
+        return blocks.stream()
+                     .filter(block -> (Float.min(block.getTop(), as.getTop()) -
+                                                              Float.max(block.getBottom(), as.getBottom()) > 0))
+                     .collect(Collectors.toList());
     }
 }
