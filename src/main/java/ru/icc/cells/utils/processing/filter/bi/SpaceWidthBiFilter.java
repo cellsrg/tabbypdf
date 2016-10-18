@@ -7,51 +7,50 @@ import ru.icc.cells.common.TextBlock;
 import ru.icc.cells.common.TextChunk;
 
 public class SpaceWidthBiFilter extends BiHeuristic<Rectangle> {
-    private float spaceWidthMultiplier;
+    private float   spaceWidthMultiplier;
+    private boolean enableListCheck;
 
     public SpaceWidthBiFilter() {
-        this(1f);
+        this(1f, false);
     }
 
-    public SpaceWidthBiFilter(float spaceWidthMultiplier) {
+    public SpaceWidthBiFilter(float spaceWidthMultiplier, boolean enableListCheck) {
         super(Orientation.HORIZONTAL);
         this.spaceWidthMultiplier = spaceWidthMultiplier;
+        enableListCheck = enableListCheck;
+    }
+
+    public SpaceWidthBiFilter enableListCheck(boolean value) {
+        this.enableListCheck = value;
+        return this;
     }
 
     @Override
     public boolean test(Rectangle first, Rectangle second) {
+        TextChunk fc = null, sc = null;
+        boolean   isList;
         if (first.getClass().equals(TextChunk.class) && second.getClass().equals(TextChunk.class)) {
-            TextChunk firstChunk  = ((TextChunk) first);
-            TextChunk secondChunk = ((TextChunk) second);
-            if (firstChunk.getRight() >= secondChunk.getLeft()) return true;
-            float spaceWidth;
-            if (firstChunk.getText().contains(" ")) {
-                spaceWidth = firstChunk.getCharSpaceWidth();
-            } else {
-                spaceWidth = new Chunk(' ', new Font(firstChunk.getChunkFont())).getWidthPoint();
-                if (spaceWidth == 0) {
-                    spaceWidth = 3;
-                }
-            }
-            float chunkDistance = secondChunk.getLeft() - firstChunk.getRight();
-            return chunkDistance <= spaceWidth * spaceWidthMultiplier;
+            fc = (TextChunk) first;
+            sc = (TextChunk) second;
+            isList = false;
         } else if (first.getClass().equals(TextBlock.class) && second.getClass().equals(TextBlock.class)) {
-            TextBlock firstBlock  = ((TextBlock) first);
-            TextBlock secondBlock = ((TextBlock) second);
-            if (firstBlock.getRight() >= secondBlock.getLeft()) return true;
-            float spaceWidth;
-            if (firstBlock.getText().contains(" ")) {
-                spaceWidth = firstBlock.getChunks().get(firstBlock.getChunks().size() - 1).getCharSpaceWidth();
-            } else {
-                spaceWidth = new Chunk(' ', new Font(
-                        firstBlock.getChunks().get(firstBlock.getChunks().size() - 1).getChunkFont())).getWidthPoint();
-                if (spaceWidth == 0) {
-                    spaceWidth = 3;
-                }
-            }
-            float chunkDistance = secondBlock.getLeft() - firstBlock.getRight();
-            return chunkDistance <= spaceWidth * spaceWidthMultiplier || (firstBlock.getText().matches("\\d+\\.\\s*"));
+            fc = ((TextBlock) first).getChunks().get(((TextBlock) first).getChunks().size() - 1);
+            sc = ((TextBlock) second).getChunks().get(0);
+            isList = ((TextBlock) first).getText().matches("\\d+\\.\\s*");// example: '1. '
+        } else {
+            return true;
         }
-        return true;
+        if (fc.getRight() >= sc.getLeft()) return true;
+        float spaceWidth;
+        if (fc.getText().contains(" ")) {
+            spaceWidth = fc.getCharSpaceWidth();
+        } else {
+            spaceWidth = new Chunk(' ', new Font(fc.getChunkFont())).getWidthPoint();
+            if (spaceWidth == 0) {
+                spaceWidth = 3;
+            }
+        }
+        float chunkDistance = sc.getLeft() - fc.getRight();
+        return (chunkDistance <= spaceWidth * spaceWidthMultiplier) || (enableListCheck && isList);
     }
 }

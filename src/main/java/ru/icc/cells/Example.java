@@ -1,11 +1,11 @@
 package ru.icc.cells;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import ru.icc.cells.common.*;
+import ru.icc.cells.common.Page;
+import ru.icc.cells.common.TableBox;
+import ru.icc.cells.common.TextBlock;
 import ru.icc.cells.debug.visual.PdfBoxWriter;
-import ru.icc.cells.detectors.TableBoxDetector;
-import ru.icc.cells.detectors.TableRegionDetector;
-import ru.icc.cells.detectors.TextLineDetector;
+import ru.icc.cells.detectors.TableDetector;
 import ru.icc.cells.utils.content.PdfContentExtractor;
 import ru.icc.cells.utils.processing.TextChunkProcessor;
 import ru.icc.cells.utils.processing.TextChunkProcessorConfiguration;
@@ -28,13 +28,14 @@ public class Example {
         for (File file : folder.listFiles(File::isFile)) {
             processFile(file);
         }
-//                                processFile(new File("src/test/resources/pdf/Aeroflot_FS_2006.10.pdf"));
+        //processFile(new File("src/test/resources/pdf/Aeroflot_FS_2006.10.pdf"));
     }
 
     private static TextChunkProcessorConfiguration getConfiguration() {
         return new TextChunkProcessorConfiguration()
-                            /*VERTICAL FILTERS*/.addFilter(new HorizontalPositionBiHeuristic())
-                            .addFilter(new SpaceWidthBiFilter())
+                            /*VERTICAL FILTERS*/
+                            .addFilter(new HorizontalPositionBiHeuristic())
+                            .addFilter(new SpaceWidthBiFilter().enableListCheck(true))
                             /*HORIZONTAL FILTERS*/
                             .addFilter(new VerticalPositionBiHeuristic())
                             .addFilter(new HeightBiHeuristic())
@@ -48,7 +49,7 @@ public class Example {
                             .addStringsToReplace(new String[]{"•", "", " ", "_", "\u0002"/**/});
     }
 
-    public static void processFile(File file) {
+    private static void processFile(File file) {
         System.out.println(file.getName());
         String path = file.getAbsolutePath();
         try {
@@ -60,15 +61,11 @@ public class Example {
             for (int pageNumber = 0; pageNumber < extractor.getNumberOfPages(); pageNumber++) {
                 Page page = extractor.getPageContent(pageNumber + 1);
                 writer.setPage(pageNumber);
-                TextChunkProcessorConfiguration configuration = getConfiguration();
-
-                List<TextBlock>   textBlocks   = new TextChunkProcessor(page, configuration).process();
-                List<TextLine>    textLines    = new TextLineDetector().detect(textBlocks);
-                List<TableRegion> tableRegions = new TableRegionDetector().detect(textLines);
-                List<TableBox>    tableBoxes   = new TableBoxDetector(textLines).detect(tableRegions);
-
-//                writer.setColor(Color.GREEN);
-//                writer.drawRects(page.getImageRegions());
+                TextChunkProcessorConfiguration configuration =
+                        getConfiguration().addFilter(new LinesBetweenChunksBiHeuristic(page.getRulings()));
+                List<TextBlock> textBlocks = new TextChunkProcessor(page, configuration).process();
+                TableDetector  tableDetector = new TableDetector(null);
+                List<TableBox> tableBoxes    = tableDetector.detect(textBlocks);
 
                 writer.setColor(Color.PINK);
                 writer.drawRects(page.getOriginChunks());
