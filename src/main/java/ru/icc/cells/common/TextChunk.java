@@ -6,7 +6,7 @@ import com.itextpdf.text.pdf.parser.Vector;
 /**
  * Rectangular area containing text and font characteristics
  */
-public class TextChunk extends Rectangle implements Comparable<TextChunk>, TextContainer {
+public class TextChunk extends RectangularTextContainer implements Comparable<TextChunk> {
     /**
      * the text of the chunk
      */

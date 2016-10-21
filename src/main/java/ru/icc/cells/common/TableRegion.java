@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Contains text lines belongs to same table
  */
-public class TableRegion extends Rectangle implements TextContainer{
+public class TableRegion extends RectangularTextContainer {
     private List<TextLine> textLines = new ArrayList<>();
     private List<Rectangle> gaps = new ArrayList<>();
 

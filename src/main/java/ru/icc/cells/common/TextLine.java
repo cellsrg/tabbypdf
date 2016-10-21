@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Container for text blocks placed on same horizontal line
  */
-public class TextLine extends Rectangle implements TextContainer {
+public class TextLine extends RectangularTextContainer {
     private List<TextBlock> textBlocks = new ArrayList<>();
     private List<Rectangle> gaps       = new ArrayList<>();
 

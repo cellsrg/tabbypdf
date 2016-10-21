@@ -67,11 +67,18 @@ public class Rectangle {
      * Checks whether this rectangle contains other rectangle
      */
     public <T extends Rectangle> boolean contains(T other) {
-        boolean left   = this.left <= other.getLeft();
-        boolean right  = this.right >= other.getRight();
-        boolean top    = this.top >= other.getTop();
-        boolean bottom = this.bottom <= other.getBottom();
-
+        boolean left = this.left <= other.getRight();
+        boolean right = this.right >= other.getLeft();
+        boolean top = this.top >= other.getBottom();
+        boolean bottom = this.bottom <= other.getTop();
         return left && right && top && bottom;
+    }
+
+    public <T extends Rectangle> boolean intersects(T other){
+        boolean left = this.left <= other.getRight();
+        boolean right = this.right >= other.getLeft();
+        boolean top = this.top >= other.getBottom();
+        boolean bottom = this.bottom <= other.getTop();
+        return (left && (top || bottom)) || (right && (top || bottom));
     }
 }
