@@ -1,5 +1,7 @@
 package ru.icc.cells.common;
 
+import java.awt.geom.Rectangle2D;
+
 /**
  * Simple rectangular bounding, represented with four coordinates:
  * left, right x-coordinates and top, bottom y-coordinates
@@ -67,18 +69,18 @@ public class Rectangle {
      * Checks whether this rectangle contains other rectangle
      */
     public <T extends Rectangle> boolean contains(T other) {
-        boolean left = this.left <= other.getRight();
-        boolean right = this.right >= other.getLeft();
-        boolean top = this.top >= other.getBottom();
-        boolean bottom = this.bottom <= other.getTop();
-        return left && right && top && bottom;
+        Rectangle2D.Float thisRect = new Rectangle2D.Float(left, bottom, right - left, top - bottom);
+        Rectangle2D.Float otherRect =
+                new Rectangle2D.Float(other.getLeft(), other.getBottom(), other.getRight() - other.getLeft(),
+                                      other.getTop() - other.getBottom());
+        return thisRect.contains(otherRect);
     }
 
-    public <T extends Rectangle> boolean intersects(T other){
-        boolean left = this.left <= other.getRight();
-        boolean right = this.right >= other.getLeft();
-        boolean top = this.top >= other.getBottom();
-        boolean bottom = this.bottom <= other.getTop();
-        return (left && (top || bottom)) || (right && (top || bottom));
+    public <T extends Rectangle> boolean intersects(T other) {
+        Rectangle2D.Float thisRect = new Rectangle2D.Float(left, bottom, right - left, top - bottom);
+        Rectangle2D.Float otherRect =
+                new Rectangle2D.Float(other.getLeft(), other.getBottom(), other.getRight() - other.getLeft(),
+                                      other.getTop() - other.getBottom());
+        return thisRect.intersects(otherRect);
     }
 }
