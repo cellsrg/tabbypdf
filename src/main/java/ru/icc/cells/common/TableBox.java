@@ -7,6 +7,7 @@ import java.util.List;
  * Contains table region that belongs to the same table
  */
 public class TableBox extends Rectangle {
+    private int pageNumber;
     private List<TableRegion> tableRegions = new ArrayList<>();
 
     public TableBox() {
@@ -36,5 +37,13 @@ public class TableBox extends Rectangle {
         } else {
             super.join(other);
         }
+    }
+
+    public void setPageNumber(int pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    public int getPageNumber() {
+        return pageNumber;
     }
 }
