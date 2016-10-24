@@ -62,10 +62,10 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
 
     @Override
     public List<TableBox> detect(List<TableRegion> tableRegions) {
-        List<TableRegion> regions = new ArrayList<>(tableRegions);
-        List<TableBox> tableBoxes = new ArrayList<>();
-        TableBox       tableBox   = null;
-        TableRegion    prevRegion = null;
+        List<TableRegion> regions    = new ArrayList<>(tableRegions);
+        List<TableBox>    tableBoxes = new ArrayList<>();
+        TableBox          tableBox   = null;
+        TableRegion       prevRegion = null;
 
         if (regions.size() == 1) {
             tableBox = new TableBox();
@@ -98,6 +98,9 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
         }
         tableBox.add(regions.get(regions.size() - 1));
         tableBoxes.add(tableBox);
+
+        tableBoxes.removeIf(
+                tb -> tb.getTableRegions().size() < 2 && tb.getTableRegions().get(0).getTextLines().size() < 2);
 
         return tableBoxes;
     }
