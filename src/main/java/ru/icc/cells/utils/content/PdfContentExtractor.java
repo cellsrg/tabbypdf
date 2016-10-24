@@ -32,7 +32,10 @@ public class PdfContentExtractor {
     }
 
     public Page getPageContent(int pageNumber) throws IOException {
-        return new Page(getChunks(pageNumber), getCharacterChunks(pageNumber), getWordChunks(pageNumber),
+        pageNumber++;
+        Rectangle pageBound = reader.getPageSize(pageNumber);
+        return new Page(pageBound.getLeft(), pageBound.getBottom(), pageBound.getRight(), pageBound.getTop(),
+                        getChunks(pageNumber), getCharacterChunks(pageNumber), getWordChunks(pageNumber),
                         getRulings(pageNumber), getImageRegions(pageNumber));
     }
 

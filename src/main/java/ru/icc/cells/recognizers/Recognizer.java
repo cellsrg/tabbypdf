@@ -1,6 +1,11 @@
 package ru.icc.cells.recognizers;
 
-/**
- * Created by sunveil on 23/06/16.
- */
-public abstract class Recognizer {}
+import ru.icc.cells.common.Rectangle;
+
+import java.util.List;
+
+public interface Recognizer<T extends Rectangle, K extends Rectangle> {
+
+    K recognize(List<T> from);
+
+}
