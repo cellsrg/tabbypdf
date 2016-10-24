@@ -49,7 +49,9 @@ public class TextChunkProcessor {
         }).collect(Collectors.toList());
         prepareChunks(chunks);
         List<TextBlock> blocks = join(chunks);
-        removeColons(blocks);
+        if (cnf.getRemoveColons()) {
+            removeColons(blocks);
+        }
         return blocks;
     }
 

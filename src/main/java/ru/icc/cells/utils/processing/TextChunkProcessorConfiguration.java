@@ -12,6 +12,7 @@ public class TextChunkProcessorConfiguration {
     private List<BiHeuristic>  biHeuristics     = new ArrayList<>();
     private List<TriHeuristic> triHeuristics    = new ArrayList<>();
     private List<String>       stringsToReplace = new ArrayList<>();
+    private boolean            removeColons     = false;
 
     public TextChunkProcessorConfiguration addFilter(Heuristic filter) {
         Class<?> filterClass = filter.getClass();
@@ -28,6 +29,12 @@ public class TextChunkProcessorConfiguration {
         return this;
     }
 
+    public TextChunkProcessorConfiguration setRemoveColons(boolean removeColons) {
+        this.removeColons = removeColons;
+        return this;
+    }
+
+
     public List<BiHeuristic> getBiHeuristics() {
         return biHeuristics;
     }
@@ -38,5 +45,9 @@ public class TextChunkProcessorConfiguration {
 
     public List<String> getStringsToReplace() {
         return stringsToReplace;
+    }
+
+    public boolean getRemoveColons() {
+        return removeColons;
     }
 }
