@@ -9,15 +9,17 @@ import ru.icc.cells.common.table.Table;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.IOException;
 
 public class TableToHtmlWriter {
 
-    public void write(Table table, String path) throws ParserConfigurationException, TransformerException {
+    public void write(Table table, String path) throws ParserConfigurationException, TransformerException, IOException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder        docBuilder = docFactory.newDocumentBuilder();
         Document               doc        = docBuilder.newDocument();
@@ -35,7 +37,7 @@ public class TableToHtmlWriter {
                     if (cell.getRowHeight() > 1) {
                         td.setAttribute("rowspan", String.valueOf(cell.getRowHeight()));
                     }
-                    if (cell.getColumnWidth()>1){
+                    if (cell.getColumnWidth() > 1) {
                         td.setAttribute("colspan", String.valueOf(cell.getColumnWidth()));
                     }
                     td.appendChild(doc.createTextNode(cell.getText()));
@@ -45,11 +47,12 @@ public class TableToHtmlWriter {
             }
         }
 
-
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer        transformer        = transformerFactory.newTransformer();
-        DOMSource          source             = new DOMSource(doc);
-        StreamResult       result             = new StreamResult(path);
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        DOMSource    source = new DOMSource(doc);
+        StreamResult result = new StreamResult(path);
 
         transformer.transform(source, result);
     }
