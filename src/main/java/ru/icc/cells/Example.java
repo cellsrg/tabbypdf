@@ -3,8 +3,6 @@ package ru.icc.cells;
 import ru.icc.cells.common.Page;
 import ru.icc.cells.common.TableBox;
 import ru.icc.cells.common.TextBlock;
-import ru.icc.cells.common.table.Cell;
-import ru.icc.cells.common.table.Row;
 import ru.icc.cells.common.table.Table;
 import ru.icc.cells.debug.Debug;
 import ru.icc.cells.detectors.TableDetector;
@@ -16,7 +14,7 @@ import ru.icc.cells.utils.processing.filter.Heuristic;
 import ru.icc.cells.utils.processing.filter.bi.*;
 import ru.icc.cells.utils.processing.filter.tri.CutInAfterTriHeuristic;
 import ru.icc.cells.utils.processing.filter.tri.CutInBeforeTriHeuristic;
-import ru.icc.cells.writers.TableToHtmlWriter;
+import ru.icc.cells.writers.TableBoxToXmlWriter;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -30,15 +28,16 @@ public class Example {
     public static final String SAVE_PDF_DIR = "src/test/resources/pdf/edit/";
 
     public static void main(String[] args) throws IOException, TransformerException, ParserConfigurationException {
-        File folder = new File(TEST_PDF_DIR);
-                for (File file : folder.listFiles(File::isFile)) {
-                    process(file);
-//                            TableBoxToXmlWriter writer = new TableBoxToXmlWriter();
-//                            writer.write(findTables(file), file.getName(),
-//                                         SAVE_PDF_DIR + "xml/" + file.getName().substring(0, file.getName().lastIndexOf('.')) +
-//                                         "-reg-output.xml");
-                }
-//        process(new File("src/test/resources/pdf/Aeroflot_FS_2006.10.pdf"));
+        Debug.ENABLE_DEBUG = true;
+                File folder = new File(TEST_PDF_DIR);
+                        for (File file : folder.listFiles(File::isFile)) {
+//                            process(file);
+                                    TableBoxToXmlWriter writer = new TableBoxToXmlWriter();
+                                    writer.write(process(file), file.getName(),
+                                                 SAVE_PDF_DIR + "xml/" + file.getName().substring(0, file.getName().lastIndexOf('.')) +
+                                                 "-reg-output.xml");
+                        }
+//                process(new File("src/test/resources/pdf/eu-021.pdf"));
     }
 
     private static TextChunkProcessorConfiguration getDetectionConfiguration() {
@@ -97,22 +96,19 @@ public class Example {
                 }
                 tableBoxes.addAll(pageTableBoxes);
 
+                Debug.setPage(pageNumber);
                 Debug.drawRects(pageTableBoxes);
 
-                for (TableBox pageTableBox : pageTableBoxes) {
-                    Table             table  = recognizeTable(page, pageTableBox);
-                    TableToHtmlWriter writer = new TableToHtmlWriter();
-                    writer.write(table, SAVE_PDF_DIR + "html/" + file.getName() + ".html");
-                    for (Row row : table.getRows()) {
-                        for (Cell cell : row.getCells()) {
-                            Debug.print(" | " + cell.getText());
-                        }
-                        Debug.println(" | ");
-                    }
-                    Debug.println();
-                }
+/*                for (int i = 0; i < pageTableBoxes.size(); i++) {
+                    TableBox          pageTableBox = pageTableBoxes.get(i);
+                    Table             table        = recognizeTable(page, pageTableBox);
+                    TableOptimizer optimizer = new TableOptimizer();
+                    optimizer.optimize(table);
+                    TableToHtmlWriter writer       = new TableToHtmlWriter();
+                    writer.write(table, SAVE_PDF_DIR + "html/" + file.getName() + "." + i + ".html");
+                }*/
             }
-        } catch (IOException | ParserConfigurationException | TransformerException e) {
+        } catch (IOException /*| ParserConfigurationException | TransformerException*/ e) {
             e.printStackTrace();
         }
 
