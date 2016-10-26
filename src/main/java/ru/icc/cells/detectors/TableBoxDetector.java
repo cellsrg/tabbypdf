@@ -1,9 +1,7 @@
 package ru.icc.cells.detectors;
 
-import ru.icc.cells.common.Rectangle;
-import ru.icc.cells.common.TableBox;
-import ru.icc.cells.common.TableRegion;
-import ru.icc.cells.common.TextLine;
+import ru.icc.cells.common.*;
+import ru.icc.cells.utils.processing.filter.bi.HeightBiHeuristic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,9 +66,11 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
         TableRegion       prevRegion = null;
 
         if (regions.size() == 1) {
-            tableBox = new TableBox();
-            tableBox.add(regions.get(0));
-            tableBoxes.add(tableBox);
+            if (regions.get(0).getTextLines().size() > 1) {
+                tableBox = new TableBox();
+                tableBox.add(regions.get(0));
+                tableBoxes.add(tableBox);
+            }
             return tableBoxes;
         } else if (regions.size() == 0) {
             return tableBoxes;
@@ -102,7 +102,31 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
         tableBoxes.removeIf(
                 tb -> tb.getTableRegions().size() < 2 && tb.getTableRegions().get(0).getTextLines().size() < 2);
 
+        mergeCloseLocatedBoxes(tableBoxes);
+
         return tableBoxes;
+    }
+
+    private void mergeCloseLocatedBoxes(List<TableBox> tableBoxes) {
+        for (int i = 0; i < tableBoxes.size() - 1; i++) {
+            TableBox currBox = tableBoxes.get(i);
+            TableBox nextBox = tableBoxes.get(i + 1);
+
+            TableRegion currReg = currBox.getTableRegions().get(currBox.getTableRegions().size() - 1);
+            TableRegion nextReg = nextBox.getTableRegions().get(0);
+
+            TextLine currLine = currReg.getTextLines().get(currReg.getTextLines().size() - 1);
+            TextLine nextLine = nextReg.getTextLines().get(0);
+
+            TextBlock currBlock = currLine.getTextBlocks().get(currLine.getTextBlocks().size() - 1);
+            TextBlock nextBlock = nextLine.getTextBlocks().get(0);
+
+            if (new HeightBiHeuristic().test(currBlock, nextBlock)) {
+                nextBox.getTableRegions().forEach(currBox::add);
+                tableBoxes.remove(i + 1);
+                i--;
+            }
+        }
     }
 
     private int gcorr(Rectangle gap, TableRegion region) {
