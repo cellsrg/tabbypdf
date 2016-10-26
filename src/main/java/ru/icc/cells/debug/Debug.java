@@ -14,9 +14,18 @@ public class Debug {
 
     private static PDDocument   doc;
     private static PdfBoxWriter writer;
-    public static final boolean ENABLE_DEBUG = false;
+    public static boolean ENABLE_DEBUG;
 
     private Debug() {}
+
+
+    public static void setPage(int pageNumber) throws IOException {
+        if (ENABLE_DEBUG){
+            if (writer!=null){
+                writer.setPage(pageNumber);
+            }
+        }
+    }
 
     public static void handleFile(File file) throws IOException {
         if (ENABLE_DEBUG) {
