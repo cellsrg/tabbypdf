@@ -32,15 +32,31 @@ public class SimpleTableRecognizer extends AbstractTableRecognizer<Page> {
         List<TextBlock> blocks = getBlocks(from);
         List<Rectangle> vGaps  = PageLayoutAlgorithm.getVerticalGaps(blocks);
         List<Rectangle> hGaps  = PageLayoutAlgorithm.getHorizontalGaps(blocks);
-        vGaps = vGaps.stream()
-                     .map(r -> new Rectangle((r.getLeft() + r.getRight()) / 2, from.getBottom() - 20,
-                                             (r.getLeft() + r.getRight()) / 2, from.getTop() + 20))
-                     .collect(Collectors.toList());
+        vGaps.sort((o1, o2) -> Float.compare(o1.getLeft(),o2.getLeft()));
+        hGaps.sort((o1, o2) -> Float.compare(o2.getTop(),o1.getTop()));
 
-        hGaps = hGaps.stream()
-                     .map(r -> new Rectangle(from.getLeft() - 20, (r.getBottom() + r.getTop()) / 2,
-                                             from.getRight() + 20, (r.getBottom() + r.getTop()) / 2))
+        Rectangle first = vGaps.get(0);
+        first = new Rectangle(first.getRight(), first.getBottom(), first.getRight(), first.getTop());
+        Rectangle last = vGaps.get(vGaps.size() - 1);
+        last = new Rectangle(last.getLeft(), last.getBottom(), last.getLeft(), last.getTop());
+        vGaps = vGaps.stream()
+                     .map(r -> new Rectangle((r.getLeft() + r.getRight()) / 2, r.getBottom(),
+                                             (r.getLeft() + r.getRight()) / 2, r.getTop()))
                      .collect(Collectors.toList());
+        vGaps.set(0, first);
+        vGaps.set(vGaps.size() - 1, last);
+
+        first = hGaps.get(0);
+        first = new Rectangle(first.getLeft(), first.getBottom(), first.getRight(), first.getBottom());
+        last = hGaps.get(hGaps.size() - 1);
+        last = new Rectangle(last.getLeft(), last.getTop(), last.getRight(), last.getTop());
+        hGaps = hGaps.stream()
+                     .map(r -> new Rectangle(r.getLeft(), (r.getBottom() + r.getTop()) / 2,
+                                             r.getRight() , (r.getBottom() + r.getTop()) / 2))
+                     .collect(Collectors.toList());
+        hGaps.set(0, first);
+        hGaps.set(hGaps.size() - 1, last);
+
         List<Rectangle> allGaps = new ArrayList<>(vGaps);
         allGaps.addAll(hGaps);
 
