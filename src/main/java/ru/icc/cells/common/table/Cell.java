@@ -1,13 +1,14 @@
 package ru.icc.cells.common.table;
 
+import ru.icc.cells.common.Rectangle;
 import ru.icc.cells.common.RectangularTextContainer;
 import ru.icc.cells.common.TextBlock;
 
 import java.util.List;
 
 public class Cell extends RectangularTextContainer {
-    private final int id;
-    private final int rowHeight, columnWidth;
+    private int id;
+    private int rowHeight, columnWidth;
     private final List<TextBlock> content;
 
     public Cell(int id, float left, float bottom, float right, float top, int rowHeight, int columnWidth,
@@ -33,5 +34,23 @@ public class Cell extends RectangularTextContainer {
 
     public int getColumnWidth() {
         return columnWidth;
+    }
+
+    @Override
+    public void join(Rectangle other) {
+        if (other != null) {
+            super.join(other);
+            if (other instanceof Cell) {
+                this.columnWidth += ((Cell) other).columnWidth;
+                this.content.addAll(((Cell) other).content);
+                this.id = Math.min(this.id, ((Cell) other).id);
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Cell{" + "id=" + id + ", rowHeight=" + rowHeight + ", columnWidth=" + columnWidth + ", content=\"" +
+               getText() + "\"}" + System.lineSeparator();
     }
 }
