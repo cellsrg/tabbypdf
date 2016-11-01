@@ -21,7 +21,19 @@ public class Cell extends RectangularTextContainer {
     }
 
     public String getText() {
-        return content.stream().map(TextBlock::getText).reduce(String::concat).orElse("");
+        return content.stream().map(TextBlock::getText).reduce(String::concat).orElse("").trim();
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setRowHeight(int rowHeight) {
+        this.rowHeight = rowHeight;
+    }
+
+    public void setColumnWidth(int columnWidth) {
+        this.columnWidth = columnWidth;
     }
 
     public int getId() {
