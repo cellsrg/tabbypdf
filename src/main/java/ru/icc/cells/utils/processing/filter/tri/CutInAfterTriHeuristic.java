@@ -10,6 +10,8 @@ public class CutInAfterTriHeuristic extends TriHeuristic<Rectangle> {
 
     @Override
     public boolean test(Rectangle first, Rectangle second, Rectangle third) {
-        return !(new HorizontalPositionBiHeuristic().test(second, third) && first.getRight() >= third.getLeft());
+        HorizontalPositionBiHeuristic horizontalPositionBiHeuristic = new HorizontalPositionBiHeuristic();
+        return !(first.getLeft() <= second.getRight() && first.getRight() >= third.getLeft() &&
+        horizontalPositionBiHeuristic.test(second, third));
     }
 }
