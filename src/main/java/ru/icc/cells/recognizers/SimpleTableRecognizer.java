@@ -5,7 +5,6 @@ import ru.icc.cells.common.Rectangle;
 import ru.icc.cells.common.TextBlock;
 import ru.icc.cells.common.table.Cell;
 import ru.icc.cells.common.table.Table;
-import ru.icc.cells.debug.Debug;
 import ru.icc.cells.utils.content.PageLayoutAlgorithm;
 import ru.icc.cells.utils.processing.TextChunkProcessor;
 import ru.icc.cells.utils.processing.TextChunkProcessorConfiguration;
@@ -32,8 +31,8 @@ public class SimpleTableRecognizer extends AbstractTableRecognizer<Page> {
         List<TextBlock> blocks = getBlocks(from);
         List<Rectangle> vGaps  = PageLayoutAlgorithm.getVerticalGaps(blocks);
         List<Rectangle> hGaps  = PageLayoutAlgorithm.getHorizontalGaps(blocks);
-        vGaps.sort((o1, o2) -> Float.compare(o1.getLeft(),o2.getLeft()));
-        hGaps.sort((o1, o2) -> Float.compare(o2.getTop(),o1.getTop()));
+        vGaps.sort((o1, o2) -> Float.compare(o1.getLeft(), o2.getLeft()));
+        hGaps.sort((o1, o2) -> Float.compare(o2.getTop(), o1.getTop()));
 
         Rectangle first = vGaps.get(0);
         first = new Rectangle(first.getRight(), first.getBottom(), first.getRight(), first.getTop());
@@ -51,16 +50,14 @@ public class SimpleTableRecognizer extends AbstractTableRecognizer<Page> {
         last = hGaps.get(hGaps.size() - 1);
         last = new Rectangle(last.getLeft(), last.getTop(), last.getRight(), last.getTop());
         hGaps = hGaps.stream()
-                     .map(r -> new Rectangle(r.getLeft(), (r.getBottom() + r.getTop()) / 2,
-                                             r.getRight() , (r.getBottom() + r.getTop()) / 2))
+                     .map(r -> new Rectangle(r.getLeft(), (r.getBottom() + r.getTop()) / 2, r.getRight(),
+                                             (r.getBottom() + r.getTop()) / 2))
                      .collect(Collectors.toList());
         hGaps.set(0, first);
         hGaps.set(hGaps.size() - 1, last);
 
         List<Rectangle> allGaps = new ArrayList<>(vGaps);
         allGaps.addAll(hGaps);
-
-        Debug.drawRects(allGaps);
 
         rows.addAll(hGaps.stream().map(Rectangle::getTop).collect(Collectors.toList()));
         cols.addAll(vGaps.stream().map(Rectangle::getLeft).collect(Collectors.toList()));
@@ -95,7 +92,6 @@ public class SimpleTableRecognizer extends AbstractTableRecognizer<Page> {
                 }
             }
         }
-
         return table;
     }
 

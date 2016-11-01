@@ -44,6 +44,9 @@ public class SpaceWidthBiFilter extends BiHeuristic<Rectangle> {
         float spaceWidth;
         if (fc.getText().contains(" ")) {
             spaceWidth = fc.getCharSpaceWidth();
+            if (spaceWidth > 20) {
+                spaceWidth = 20;
+            }
         } else {
             spaceWidth = new Chunk(' ', new Font(fc.getChunkFont())).getWidthPoint();
             if (spaceWidth == 0) {

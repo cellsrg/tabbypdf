@@ -9,12 +9,18 @@ import ru.icc.cells.common.Ruling;
 import ru.icc.cells.common.TextChunk;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PdfContentExtractor {
     private PdfReader              reader;
     private PdfReaderContentParser parser;
+    private Map<Integer, MikhailovTextExtractionStrategy> processedText    = new HashMap<>();
+    private Map<Integer, MikhailovExtRenderListener>      processedRulings = new HashMap<>();
+    private Map<Integer, ImageRegionExtractionStrategy>   processedImages  = new HashMap<>();
+
 
     public PdfContentExtractor(String path) throws IOException {
         this.reader = new PdfReader(path);
@@ -36,7 +42,7 @@ public class PdfContentExtractor {
         Rectangle pageBound = reader.getPageSize(pageNumber);
         return new Page(pageBound.getLeft(), pageBound.getBottom(), pageBound.getRight(), pageBound.getTop(),
                         getChunks(pageNumber), getCharacterChunks(pageNumber), getWordChunks(pageNumber),
-                        getRulings(pageNumber), getImageRegions(pageNumber));
+                        getRulings(pageNumber), getImageRegions(pageNumber), getMapping(pageNumber));
     }
 
     public List<TextChunk> getWordChunks(int pageNumber) throws IOException {
@@ -54,6 +60,10 @@ public class PdfContentExtractor {
 
     public String getText(int pageNumber) throws IOException {
         return processTextContent(pageNumber).getResultantText();
+    }
+
+    private Map<TextChunk,List<TextChunk>> getMapping(int pageNumber) throws IOException {
+        return processTextContent(pageNumber).getOriginalCharacterChunksMapping();
     }
 
     public List<Ruling> getRulings(int pageNumber) throws IOException {
@@ -92,23 +102,40 @@ public class PdfContentExtractor {
     }
 
     private MikhailovExtRenderListener processGraphicContent(int pageNumber) throws IOException {
-        MikhailovExtRenderListener extRenderListener = new MikhailovExtRenderListener();
-        parser.processContent(pageNumber, extRenderListener);
+        MikhailovExtRenderListener extRenderListener;
+        if (!processedRulings.containsKey(pageNumber)) {
+            extRenderListener = new MikhailovExtRenderListener();
+            parser.processContent(pageNumber, extRenderListener);
+            processedRulings.put(pageNumber, extRenderListener);
+        } else {
+            extRenderListener = processedRulings.get(pageNumber);
+        }
         return extRenderListener;
     }
 
 
     private MikhailovTextExtractionStrategy processTextContent(int pageNumber) throws IOException {
-        MikhailovTextExtractionStrategy textExtractionStrategy =
-                new MikhailovTextExtractionStrategy(reader.getPageRotation(pageNumber),
-                                                    reader.getPageSize(pageNumber).getWidth());
-        parser.processContent(pageNumber, textExtractionStrategy);
+        MikhailovTextExtractionStrategy textExtractionStrategy;
+        if (!processedText.containsKey(pageNumber)) {
+            textExtractionStrategy = new MikhailovTextExtractionStrategy(reader.getPageRotation(pageNumber),
+                                                                         reader.getPageSize(pageNumber).getWidth());
+            parser.processContent(pageNumber, textExtractionStrategy);
+            processedText.put(pageNumber, textExtractionStrategy);
+        } else {
+            textExtractionStrategy = processedText.get(pageNumber);
+        }
         return textExtractionStrategy;
     }
 
     private ImageRegionExtractionStrategy processImageContent(int pageNumber) throws IOException {
-        ImageRegionExtractionStrategy strategy = new ImageRegionExtractionStrategy();
-        parser.processContent(pageNumber, strategy);
+        ImageRegionExtractionStrategy strategy;
+        if (!processedImages.containsKey(pageNumber)) {
+            strategy = new ImageRegionExtractionStrategy();
+            parser.processContent(pageNumber, strategy);
+            processedImages.put(pageNumber, strategy);
+        } else {
+            strategy = processedImages.get(pageNumber);
+        }
         return strategy;
     }
 }

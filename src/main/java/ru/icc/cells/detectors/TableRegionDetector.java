@@ -120,15 +120,21 @@ class TableRegionDetector implements Detector<TableRegion, TextLine> {
      * @param previousLine upper rectangle
      * @param nextLine     lower rectangle
      */
-    public static long getCountOfTextLinesBetween(List<? extends Rectangle> textLines, Rectangle previousLine,
+    public static long getCountOfTextLinesBetween(List<TextLine> textLines, Rectangle previousLine,
                                                   Rectangle nextLine) {
-        List<Rectangle> allTextLines = new ArrayList<>(textLines);
+        List<TextLine> allTextLines = new ArrayList<>(textLines);
         allTextLines.remove(previousLine);
         allTextLines.remove(nextLine);
+        List<TextLine> collect = allTextLines.stream()
+                                             .filter(line -> line.getTop() <= previousLine.getBottom() &&
+                                                             line.getBottom() >= nextLine.getTop())
+                                             .collect(Collectors.toList());
         return allTextLines.stream()
-                           .filter(rectangle -> rectangle.getTop() <= previousLine.getBottom() &&
-                                                rectangle.getBottom() >= nextLine.getTop())
-                           .count();
+                           .filter(line -> line.getTop() <= previousLine.getBottom() &&
+                                                line.getBottom() >= nextLine.getTop())
+                           .map(line->line.getText().trim().split("\n").length)
+                           .reduce(Integer::sum)
+                           .orElse(0);
     }
 
     /**

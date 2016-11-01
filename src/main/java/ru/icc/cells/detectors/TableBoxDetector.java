@@ -86,7 +86,7 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
 
             if (!(TableRegionDetector.getCountOfTextLinesBetween(pageTextLines, prevRegion, nextRegion) <=
                   maxNonTableLinesBetweenRegions &&
-                  tcorr(prevRegion, nextRegion) / prevRegion.getGaps().size() >= gapThreshold)) {
+                  tcorr(prevRegion, nextRegion) / (double) prevRegion.getGaps().size() >= gapThreshold)) {
                 tableBoxes.add(tableBox);
                 tableBox = null;
             }

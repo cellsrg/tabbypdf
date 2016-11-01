@@ -9,10 +9,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TextChunkProcessorConfiguration {
-    private List<BiHeuristic>  biHeuristics     = new ArrayList<>();
-    private List<TriHeuristic> triHeuristics    = new ArrayList<>();
-    private List<String>       stringsToReplace = new ArrayList<>();
-    private boolean            removeColons     = false;
+    private List<BiHeuristic>  biHeuristics       = new ArrayList<>();
+    private List<TriHeuristic> triHeuristics      = new ArrayList<>();
+    private List<String>       stringsToReplace   = new ArrayList<>();
+    private boolean            removeColons       = false;
+    private boolean            useCharacterChunks = false;
 
     public TextChunkProcessorConfiguration addFilter(Heuristic filter) {
         Class<?> filterClass = filter.getClass();
@@ -35,6 +36,11 @@ public class TextChunkProcessorConfiguration {
     }
 
 
+    public TextChunkProcessorConfiguration setUseCharacterChunks(boolean useCharacterChunks) {
+        this.useCharacterChunks = useCharacterChunks;
+        return this;
+    }
+
     public List<BiHeuristic> getBiHeuristics() {
         return biHeuristics;
     }
@@ -49,5 +55,9 @@ public class TextChunkProcessorConfiguration {
 
     public boolean getRemoveColons() {
         return removeColons;
+    }
+
+    public boolean getUseCharacterChunks() {
+        return useCharacterChunks;
     }
 }

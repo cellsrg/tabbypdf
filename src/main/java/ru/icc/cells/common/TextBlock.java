@@ -8,14 +8,14 @@ import java.util.List;
  */
 public class TextBlock extends RectangularTextContainer {
 
-    public TextBlock() {
-        super();
-    }
-
     private List<TextChunk> chunks = new ArrayList<>();
 
     public List<TextChunk> getChunks() {
         return chunks;
+    }
+
+    public TextBlock() {
+        super();
     }
 
     /**

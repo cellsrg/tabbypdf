@@ -3,9 +3,7 @@ package ru.icc.cells.utils.content;
 import com.itextpdf.text.pdf.parser.*;
 import ru.icc.cells.common.TextChunk;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
@@ -17,6 +15,8 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
     private final ArrayList<TextChunk> locationalChunkResult = new ArrayList<>();
 
     private final ArrayList<TextChunk> locationalWordResult = new ArrayList<>();
+
+    private final Map<TextChunk, List<TextChunk>> originalCharacterChunksMapping = new HashMap<>();
 
     private ArrayList<Line> lines = null;
 
@@ -35,6 +35,10 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
 
     public ArrayList<TextChunk> getLocationalChunkResult() {
         return locationalChunkResult;
+    }
+
+    public Map<TextChunk, List<TextChunk>> getOriginalCharacterChunksMapping() {
+        return originalCharacterChunksMapping;
     }
 
     /**
@@ -63,11 +67,16 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy {
 
     @Override
     public void renderText(TextRenderInfo renderInfo) {
+        List<TextChunk> characterChunks = new ArrayList<>();
         renderInfo.getCharacterRenderInfos().stream()//extract chunks per each character
                   .filter(rI -> !rI.getText().isEmpty()).forEachOrdered(rI -> {
-            locationalResult.add(extractLocation(rI));
+            TextChunk characterChunk = extractLocation(rI);
+            locationalResult.add(characterChunk);
+            characterChunks.add(characterChunk);
         });
-        locationalChunkResult.add(extractLocation(renderInfo)); //extract chunk
+        TextChunk originChunk = extractLocation(renderInfo);
+        originalCharacterChunksMapping.put(originChunk, characterChunks);
+        locationalChunkResult.add(originChunk); //extract chunk
     }
 
     private TextChunk extractLocation(TextRenderInfo renderInfo) {

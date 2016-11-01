@@ -1,9 +1,6 @@
 package ru.icc.cells.utils.processing;
 
-import ru.icc.cells.common.Page;
-import ru.icc.cells.common.Rectangle;
-import ru.icc.cells.common.TextBlock;
-import ru.icc.cells.common.TextChunk;
+import ru.icc.cells.common.*;
 import ru.icc.cells.utils.processing.filter.Heuristic;
 import ru.icc.cells.utils.processing.filter.bi.BiHeuristic;
 import ru.icc.cells.utils.processing.filter.bi.HorizontalPositionBiHeuristic;
@@ -42,7 +39,7 @@ public class TextChunkProcessor {
     }
 
     public List<TextBlock> process() {
-        List<TextBlock> chunks = page.getOriginChunks().stream().map(chunk -> {
+        List<TextBlock> chunks = page.getWordChunks().stream().map(chunk -> {
             TextBlock block = new TextBlock();
             block.add(chunk);
             return block;
@@ -52,6 +49,17 @@ public class TextChunkProcessor {
         if (cnf.getRemoveColons()) {
             removeColons(blocks);
         }
+
+        List<TextBlock> iterateBlocks = new ArrayList<>(blocks);
+        for (int i = 0; i < iterateBlocks.size(); i++) {
+            for (int j = i + 1; j < iterateBlocks.size(); j++) {
+                if (iterateBlocks.get(i).intersects(iterateBlocks.get(j))) {
+                    iterateBlocks.get(i).add(iterateBlocks.get(j));
+                    blocks.remove(iterateBlocks.get(j));
+                }
+            }
+        }
+
         return blocks;
     }
 
@@ -84,11 +92,11 @@ public class TextChunkProcessor {
     }
 
     private List<TextBlock> join(List<TextBlock> chunks) {
-        List<TextBlock> textBlocks = joinBlocks(chunks, horizontalBiHeuristics, horizontalTriHeuristics);
+        List<TextBlock> textBlocks = joinBlocks(chunks, horizontalBiHeuristics, horizontalTriHeuristics, false);
         int             diff       = textBlocks.size();
         while (diff != 0) {
             diff = textBlocks.size();
-            textBlocks = joinBlocks(textBlocks, horizontalBiHeuristics, horizontalTriHeuristics);
+            textBlocks = joinBlocks(textBlocks, horizontalBiHeuristics, horizontalTriHeuristics, false);
             diff = diff - textBlocks.size();
         }
         prepareBlocks(textBlocks);
@@ -96,7 +104,7 @@ public class TextChunkProcessor {
         diff = textBlocks.size();
         while (diff != 0) {
             diff = textBlocks.size();
-            textBlocks = joinBlocks(textBlocks, verticalBiHeuristics, verticalTriHeuristics);
+            textBlocks = joinBlocks(textBlocks, verticalBiHeuristics, verticalTriHeuristics, true);
             diff = diff - textBlocks.size();
         }
         return textBlocks;
@@ -104,7 +112,7 @@ public class TextChunkProcessor {
 
 
     private List<TextBlock> joinBlocks(List<TextBlock> blocks, List<BiHeuristic> biHeuristics,
-                                       List<TriHeuristic> triHeuristics) {
+                                       List<TriHeuristic> triHeuristics, boolean isVertical) {
 
         List<TextBlock> result    = new ArrayList<>();
         TextBlock       textBlock = null;
@@ -116,6 +124,9 @@ public class TextChunkProcessor {
             }
             TextBlock firstBlock  = blocks.get(i);
             TextBlock secondBlock = blocks.get(i + 1);
+            String    text        = firstBlock.getChunks().get(0).getText();
+            text = (isVertical ? "\n" : " ") + text;
+            firstBlock.getChunks().get(0).setText(text);
             textBlock.add(firstBlock);
 
             for (BiHeuristic biHeuristic : biHeuristics) {
@@ -183,19 +194,21 @@ public class TextChunkProcessor {
     }
 
     private void removeColons(List<TextBlock> blocks) {
-        TextBlock lowestBlock = Collections.min(blocks, (b1, b2) -> Float.compare(b1.getBottom(), b2.getBottom()));
-        TextBlock highestBlock = Collections.max(blocks, (b1, b2) -> Float.compare(b1.getBottom(), b2.getBottom()));
-        List<TextBlock> colonBlocks = getBlocksOnSameLine(blocks, lowestBlock);
-//        colonBlocks.addAll(getBlocksOnSameLine(blocks, highestBlock));
+        TextBlock       lowestBlock  =
+                Collections.min(blocks, (b1, b2) -> Float.compare(b1.getBottom(), b2.getBottom()));
+        TextBlock       highestBlock =
+                Collections.max(blocks, (b1, b2) -> Float.compare(b1.getBottom(), b2.getBottom()));
+        List<TextBlock> colonBlocks  = getBlocksOnSameLine(blocks, lowestBlock);
+        //        colonBlocks.addAll(getBlocksOnSameLine(blocks, highestBlock));
         colonBlocks.add(lowestBlock);
-//        colonBlocks.add(highestBlock);
+        //        colonBlocks.add(highestBlock);
         blocks.removeAll(colonBlocks);
     }
 
     public static List<TextBlock> getBlocksOnSameLine(List<TextBlock> blocks, TextBlock as) {
         return blocks.stream()
-                     .filter(block -> (Float.min(block.getTop(), as.getTop()) -
-                                                              Float.max(block.getBottom(), as.getBottom()) > 0))
+                     .filter(block -> (
+                             Float.min(block.getTop(), as.getTop()) - Float.max(block.getBottom(), as.getBottom()) > 0))
                      .collect(Collectors.toList());
     }
 }

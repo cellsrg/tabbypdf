@@ -4,22 +4,31 @@ import ru.icc.cells.common.table.Cell;
 import ru.icc.cells.common.table.Row;
 import ru.icc.cells.common.table.Table;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TableOptimizer {
     public void optimize(Table table) {
-        for (int i = 0; i < table.getRows().size() - 1; i++) {
-            List<Cell> rowCells = table.getRows().get(i).getCells();
+        for (int rowNumber = 0; rowNumber < table.getRowsSize(); rowNumber++) {
+            List<Cell> rowCells = table.getRow(rowNumber).getCells();
             for (Cell cell : rowCells) {
                 if (cell.getColumnWidth() > 1) {
-                    for (int k = i + 1; k < table.getRows().size(); k++) {
-                        span(table.getRows().get(k), cell);
+                    for (int i = rowNumber + 1; i < table.getRowsSize(); i++) {
+                        span(table.getRow(i), cell);
                     }
                 }
             }
         }
     }
+
+    private boolean isColumnStraight(List<Cell> column){
+        int  maxColWidth      = getMaxColWidth(column);
+        long countOfMaxWidths = column.stream().filter(cell -> cell.getColumnWidth() == maxColWidth).count();
+        return column.size() == countOfMaxWidths;
+    }
+
+    private int getMaxColWidth(List<Cell> column) {return Collections.max(column, (c1, c2) -> Integer.compare(c1.getColumnWidth(), c2.getColumnWidth())).getColumnWidth();}
 
     private void span(Row row, Cell curr) {
         List<Cell> collect = getCellsToSpan(row, curr);
