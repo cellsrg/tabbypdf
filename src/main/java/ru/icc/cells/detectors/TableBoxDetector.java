@@ -9,19 +9,22 @@ import java.util.List;
 /**
  * Detects the bounding of table
  */
-class TableBoxDetector implements Detector<TableBox, TableRegion> {
+class TableBoxDetector implements Detector<TableBox, TableRegion>
+{
 
     private List<TextLine> pageTextLines;
     private int            maxNonTableLinesBetweenRegions;
     private int            minProjectionIntersection;
     private double         gapThreshold;
 
-    public TableBoxDetector(List<TextLine> pageTextLines) {
+    public TableBoxDetector(List<TextLine> pageTextLines)
+    {
         this(pageTextLines, 2, 0, 0.8);
     }
 
     public TableBoxDetector(List<TextLine> pageTextLines, int maxNonTableLinesBetweenRegions,
-                            int minProjectionIntersection, double gapThreshold) {
+                            int minProjectionIntersection, double gapThreshold)
+    {
         if (minProjectionIntersection < 0)
             throw new IllegalArgumentException("minProjectionIntersection should be greater or equal 0");
         if (maxNonTableLinesBetweenRegions < 0)
@@ -34,50 +37,63 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
         this.gapThreshold = gapThreshold;
     }
 
-    public int getMaxNonTableLinesBetweenRegions() {
+    public int getMaxNonTableLinesBetweenRegions()
+    {
         return maxNonTableLinesBetweenRegions;
     }
 
-    public void setMaxNonTableLinesBetweenRegions(int maxNonTableLinesBetweenRegions) {
+    public void setMaxNonTableLinesBetweenRegions(int maxNonTableLinesBetweenRegions)
+    {
         this.maxNonTableLinesBetweenRegions = maxNonTableLinesBetweenRegions;
     }
 
-    public int getMinProjectionIntersection() {
+    public int getMinProjectionIntersection()
+    {
         return minProjectionIntersection;
     }
 
-    public void setMinProjectionIntersection(int minProjectionIntersection) {
+    public void setMinProjectionIntersection(int minProjectionIntersection)
+    {
         this.minProjectionIntersection = minProjectionIntersection;
     }
 
-    public double getGapThreshold() {
+    public double getGapThreshold()
+    {
         return gapThreshold;
     }
 
-    public void setGapThreshold(double gapThreshold) {
+    public void setGapThreshold(double gapThreshold)
+    {
         this.gapThreshold = gapThreshold;
     }
 
     @Override
-    public List<TableBox> detect(List<TableRegion> tableRegions) {
+    public List<TableBox> detect(List<TableRegion> tableRegions)
+    {
         List<TableRegion> regions    = new ArrayList<>(tableRegions);
         List<TableBox>    tableBoxes = new ArrayList<>();
         TableBox          tableBox   = null;
         TableRegion       prevRegion = null;
 
-        if (regions.size() == 1) {
-            if (regions.get(0).getTextLines().size() > 1) {
+        if (regions.size() == 1)
+        {
+            if (regions.get(0).getTextLines().size() > 1)
+            {
                 tableBox = new TableBox();
                 tableBox.add(regions.get(0));
                 tableBoxes.add(tableBox);
             }
             return tableBoxes;
-        } else if (regions.size() == 0) {
+        }
+        else if (regions.size() == 0)
+        {
             return tableBoxes;
         }
 
-        for (int i = 1; i < regions.size(); i++) {
-            if (tableBox == null) {
+        for (int i = 1; i < regions.size(); i++)
+        {
+            if (tableBox == null)
+            {
                 tableBox = new TableBox();
             }
             prevRegion = regions.get(i - 1);
@@ -86,14 +102,16 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
 
             if (!(TableRegionDetector.getCountOfTextLinesBetween(pageTextLines, prevRegion, nextRegion) <=
                   maxNonTableLinesBetweenRegions &&
-                  tcorr(prevRegion, nextRegion) / (double) prevRegion.getGaps().size() >= gapThreshold)) {
+                  tcorr(prevRegion, nextRegion) / (double) prevRegion.getGaps().size() >= gapThreshold))
+            {
                 tableBoxes.add(tableBox);
                 tableBox = null;
             }
         }
 
 
-        if (tableBox == null) {
+        if (tableBox == null)
+        {
             tableBox = new TableBox();
         }
         tableBox.add(regions.get(regions.size() - 1));
@@ -107,8 +125,10 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
         return tableBoxes;
     }
 
-    private void mergeCloseLocatedBoxes(List<TableBox> tableBoxes) {
-        for (int i = 0; i < tableBoxes.size() - 1; i++) {
+    private void mergeCloseLocatedBoxes(List<TableBox> tableBoxes)
+    {
+        for (int i = 0; i < tableBoxes.size() - 1; i++)
+        {
             TableBox currBox = tableBoxes.get(i);
             TableBox nextBox = tableBoxes.get(i + 1);
 
@@ -121,7 +141,8 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
             TextBlock currBlock = currLine.getTextBlocks().get(currLine.getTextBlocks().size() - 1);
             TextBlock nextBlock = nextLine.getTextBlocks().get(0);
 
-            if (new HeightBiHeuristic().test(currBlock, nextBlock)) {
+            if (new HeightBiHeuristic().test(currBlock, nextBlock))
+            {
                 nextBox.getTableRegions().forEach(currBox::add);
                 tableBoxes.remove(i + 1);
                 i--;
@@ -129,16 +150,20 @@ class TableBoxDetector implements Detector<TableBox, TableRegion> {
         }
     }
 
-    private int gcorr(Rectangle gap, TableRegion region) {
-        for (Rectangle regionGap : region.getGaps()) {
+    private int gcorr(Rectangle gap, TableRegion region)
+    {
+        for (Rectangle regionGap : region.getGaps())
+        {
             if (TableRegionDetector.wp(gap, regionGap) > minProjectionIntersection) return 1;
         }
         return 0;
     }
 
-    private int tcorr(TableRegion region1, TableRegion region2) {
+    private int tcorr(TableRegion region1, TableRegion region2)
+    {
         int result = 0;
-        for (Rectangle firstRegionGap : region1.getGaps()) {
+        for (Rectangle firstRegionGap : region1.getGaps())
+        {
             result += gcorr(firstRegionGap, region2);
         }
         return result;

@@ -1,6 +1,9 @@
 package ru.icc.cells.utils.processing;
 
-import ru.icc.cells.common.*;
+import ru.icc.cells.common.Page;
+import ru.icc.cells.common.Rectangle;
+import ru.icc.cells.common.TextBlock;
+import ru.icc.cells.common.TextChunk;
 import ru.icc.cells.utils.processing.filter.Heuristic;
 import ru.icc.cells.utils.processing.filter.bi.BiHeuristic;
 import ru.icc.cells.utils.processing.filter.bi.HorizontalPositionBiHeuristic;
@@ -13,7 +16,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class TextChunkProcessor {
+public class TextChunkProcessor
+{
     private Page                            page;
     private TextChunkProcessorConfiguration cnf;
     private List<BiHeuristic>               horizontalBiHeuristics;
@@ -21,7 +25,8 @@ public class TextChunkProcessor {
     private List<BiHeuristic>               verticalBiHeuristics;
     private List<TriHeuristic>              verticalTriHeuristics;
 
-    public TextChunkProcessor(Page page, TextChunkProcessorConfiguration cnf) {
+    public TextChunkProcessor(Page page, TextChunkProcessorConfiguration cnf)
+    {
         this.page = page;
         this.cnf = cnf;
         horizontalBiHeuristics = getBiHeuristics(
@@ -38,22 +43,32 @@ public class TextChunkProcessor {
                                 triHeuristic.getOrientation() == Heuristic.Orientation.BOTH);
     }
 
-    public List<TextBlock> process() {
-        List<TextBlock> chunks = page.getWordChunks().stream().map(chunk -> {
-            TextBlock block = new TextBlock();
-            block.add(chunk);
-            return block;
-        }).collect(Collectors.toList());
+    public List<TextBlock> process()
+    {
+        List<TextBlock> chunks = page
+                .getWordChunks()
+                .stream()
+                .map(chunk ->
+                     {
+                         TextBlock block = new TextBlock();
+                         block.add(chunk);
+                         return block;
+                     })
+                .collect(Collectors.toList());
         prepareChunks(chunks);
         List<TextBlock> blocks = join(chunks);
-        if (cnf.getRemoveColons()) {
+        if (cnf.getRemoveColons())
+        {
             removeColons(blocks);
         }
 
         List<TextBlock> iterateBlocks = new ArrayList<>(blocks);
-        for (int i = 0; i < iterateBlocks.size(); i++) {
-            for (int j = i + 1; j < iterateBlocks.size(); j++) {
-                if (iterateBlocks.get(i).intersects(iterateBlocks.get(j))) {
+        for (int i = 0; i < iterateBlocks.size(); i++)
+        {
+            for (int j = i + 1; j < iterateBlocks.size(); j++)
+            {
+                if (iterateBlocks.get(i).intersects(iterateBlocks.get(j)))
+                {
                     iterateBlocks.get(i).add(iterateBlocks.get(j));
                     blocks.remove(iterateBlocks.get(j));
                 }
@@ -63,38 +78,49 @@ public class TextChunkProcessor {
         return blocks;
     }
 
-    private void prepareChunks(List<TextBlock> chunks) {
+    private void prepareChunks(List<TextBlock> chunks)
+    {
         Iterator<TextBlock> chunkIterator = chunks.iterator();
-        for (TextBlock chunk = chunkIterator.next(); chunkIterator.hasNext(); chunk = chunkIterator.next()) {
+        for (TextBlock chunk = chunkIterator.next(); chunkIterator.hasNext(); chunk = chunkIterator.next())
+        {
             String chunkText = chunk.getText();
-            for (String strToReplace : cnf.getStringsToReplace()) {
-                if (!strToReplace.equals(" ")) {
+            for (String strToReplace : cnf.getStringsToReplace())
+            {
+                if (!strToReplace.equals(" "))
+                {
                     chunkText = chunkText.replaceAll(strToReplace, "");
                 }
             }
-            if (chunkText.isEmpty()) {
+            if (chunkText.isEmpty())
+            {
                 chunkIterator.remove();
             }
         }
     }
 
-    private void prepareBlocks(List<TextBlock> blocks) {
+    private void prepareBlocks(List<TextBlock> blocks)
+    {
         Iterator<TextBlock> blockIterator = blocks.iterator();
-        for (TextBlock block = blockIterator.next(); blockIterator.hasNext(); block = blockIterator.next()) {
+        for (TextBlock block = blockIterator.next(); blockIterator.hasNext(); block = blockIterator.next())
+        {
             String chunkText = block.getText();
-            for (String strToReplace : cnf.getStringsToReplace()) {
+            for (String strToReplace : cnf.getStringsToReplace())
+            {
                 chunkText = chunkText.replaceAll(strToReplace, "");
             }
-            if (chunkText.isEmpty()) {
+            if (chunkText.isEmpty())
+            {
                 blockIterator.remove();
             }
         }
     }
 
-    private List<TextBlock> join(List<TextBlock> chunks) {
+    private List<TextBlock> join(List<TextBlock> chunks)
+    {
         List<TextBlock> textBlocks = joinBlocks(chunks, horizontalBiHeuristics, horizontalTriHeuristics, false);
         int             diff       = textBlocks.size();
-        while (diff != 0) {
+        while (diff != 0)
+        {
             diff = textBlocks.size();
             textBlocks = joinBlocks(textBlocks, horizontalBiHeuristics, horizontalTriHeuristics, false);
             diff = diff - textBlocks.size();
@@ -102,7 +128,8 @@ public class TextChunkProcessor {
         prepareBlocks(textBlocks);
         normalize(textBlocks);
         diff = textBlocks.size();
-        while (diff != 0) {
+        while (diff != 0)
+        {
             diff = textBlocks.size();
             textBlocks = joinBlocks(textBlocks, verticalBiHeuristics, verticalTriHeuristics, true);
             diff = diff - textBlocks.size();
@@ -112,14 +139,17 @@ public class TextChunkProcessor {
 
 
     private List<TextBlock> joinBlocks(List<TextBlock> blocks, List<BiHeuristic> biHeuristics,
-                                       List<TriHeuristic> triHeuristics, boolean isVertical) {
+                                       List<TriHeuristic> triHeuristics, boolean isVertical)
+    {
 
         List<TextBlock> result    = new ArrayList<>();
         TextBlock       textBlock = null;
 
         join_process:
-        for (int i = 0; i < blocks.size() - 1; i++) {
-            if (textBlock == null) {
+        for (int i = 0; i < blocks.size() - 1; i++)
+        {
+            if (textBlock == null)
+            {
                 textBlock = new TextBlock();
             }
             TextBlock firstBlock  = blocks.get(i);
@@ -129,32 +159,44 @@ public class TextChunkProcessor {
             firstBlock.getChunks().get(0).setText(text);
             textBlock.add(firstBlock);
 
-            for (BiHeuristic biHeuristic : biHeuristics) {
+            for (BiHeuristic biHeuristic : biHeuristics)
+            {
                 boolean heuristicResult = true;
                 if (biHeuristic.getTargetClass().equals(Rectangle.class) ||
-                    biHeuristic.getTargetClass().equals(TextBlock.class)) {
+                    biHeuristic.getTargetClass().equals(TextBlock.class))
+                {
                     heuristicResult = biHeuristic.test(firstBlock, secondBlock);
-                } else if (biHeuristic.getTargetClass().equals(TextChunk.class)) {
+                } else if (biHeuristic.getTargetClass().equals(TextChunk.class))
+                {
                     heuristicResult = biHeuristic.test(firstBlock.getChunks().get(firstBlock.getChunks().size() - 1),
                                                        secondBlock.getChunks().get(0));
-                } else {
+                }
+                else
+                {
                     System.out.println(biHeuristic.getTargetClass());
                 }
-                if (!heuristicResult) {
+                if (!heuristicResult)
+                {
                     result.add(textBlock);
                     textBlock = null;
                     continue join_process;
                 }
             }
-            for (TriHeuristic triHeuristic : triHeuristics) {
-                if (triHeuristic.getHeuristicType() == TriHeuristic.TriHeuristicType.AFTER) {
-                    if (i + 2 < blocks.size() && !triHeuristic.test(firstBlock, secondBlock, blocks.get(i + 2))) {
+            for (TriHeuristic triHeuristic : triHeuristics)
+            {
+                if (triHeuristic.getHeuristicType() == TriHeuristic.TriHeuristicType.AFTER)
+                {
+                    if (i + 2 < blocks.size() && !triHeuristic.test(firstBlock, secondBlock, blocks.get(i + 2)))
+                    {
                         result.add(textBlock);
                         textBlock = null;
                         continue join_process;
                     }
-                } else if (triHeuristic.getHeuristicType() == TriHeuristic.TriHeuristicType.BEFORE) {
-                    if (i - 1 >= 0 && !triHeuristic.test(blocks.get(i - 1), firstBlock, secondBlock)) {
+                }
+                else if (triHeuristic.getHeuristicType() == TriHeuristic.TriHeuristicType.BEFORE)
+                {
+                    if (i - 1 >= 0 && !triHeuristic.test(blocks.get(i - 1), firstBlock, secondBlock))
+                    {
                         result.add(textBlock);
                         textBlock = null;
                         continue join_process;
@@ -162,38 +204,50 @@ public class TextChunkProcessor {
                 }
             }
         }
-        if (textBlock == null) {
+
+        if (textBlock == null)
+        {
             textBlock = new TextBlock();
             textBlock.add(blocks.get(blocks.size() - 1));
             result.add(textBlock);
-        } else {
+        }
+        else
+        {
             textBlock.add(blocks.get(blocks.size() - 1));
             result.add(textBlock);
         }
         return result;
     }
 
-    private List<BiHeuristic> getBiHeuristics(Predicate<BiHeuristic> predicate) {
+    private List<BiHeuristic> getBiHeuristics(Predicate<BiHeuristic> predicate)
+
+    {
         return cnf.getBiHeuristics().stream().filter(predicate).collect(Collectors.toList());
     }
 
-    private List<TriHeuristic> getTriHeuristics(Predicate<TriHeuristic> predicate) {
+    private List<TriHeuristic> getTriHeuristics(Predicate<TriHeuristic> predicate)
+    {
         return cnf.getTriHeuristics().stream().filter(predicate).collect(Collectors.toList());
     }
 
-    private void normalize(List<? extends Rectangle> data) {
-        for (int i = 0; i < data.size() - 2; i++) {
+    private void normalize(List<? extends Rectangle> data)
+    {
+        for (int i = 0; i < data.size() - 2; i++)
+        {
             Rectangle left = data.get(i);
-            for (int j = i + 2; j < data.size(); j++) {
+            for (int j = i + 2; j < data.size(); j++)
+            {
                 Rectangle right = data.get(j);
-                if (new HorizontalPositionBiHeuristic().test(left, right) && left.getRight() >= right.getLeft()) {
+                if (new HorizontalPositionBiHeuristic().test(left, right) && left.getRight() >= right.getLeft())
+                {
                     left.setRight(right.getLeft() - 5);
                 }
             }
         }
     }
 
-    private void removeColons(List<TextBlock> blocks) {
+    private void removeColons(List<TextBlock> blocks)
+    {
         TextBlock       lowestBlock  =
                 Collections.min(blocks, (b1, b2) -> Float.compare(b1.getBottom(), b2.getBottom()));
         TextBlock       highestBlock =
@@ -205,7 +259,8 @@ public class TextChunkProcessor {
         blocks.removeAll(colonBlocks);
     }
 
-    public static List<TextBlock> getBlocksOnSameLine(List<TextBlock> blocks, TextBlock as) {
+    public static List<TextBlock> getBlocksOnSameLine(List<TextBlock> blocks, TextBlock as)
+    {
         return blocks.stream()
                      .filter(block -> (
                              Float.min(block.getTop(), as.getTop()) - Float.max(block.getBottom(), as.getBottom()) > 0))

@@ -25,43 +25,54 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Example {
+public class Example
+{
     public static final String TEST_PDF_DIR = "src/test/resources/pdf/";
     public static final String SAVE_PDF_DIR = "src/test/resources/pdf/edit/";
 
-    public static void main(String[] args) throws IOException, TransformerException, ParserConfigurationException {
+    public static void main(String[] args) throws IOException, TransformerException, ParserConfigurationException
+    {
         Debug.ENABLE_DEBUG = true;
         File folder = new File(TEST_PDF_DIR);
-        for (File file : folder.listFiles(File::isFile)) {
+        for (File file : folder.listFiles(File::isFile))
+        {
             process(file);
         }
 //                process(new File("src/test/resources/pdf/us-037.pdf"));
     }
 
-    private static List<TableBox> process(File file) {
+    private static List<TableBox> process(File file)
+    {
         Debug.println(file.getName());
-        try {
+        try
+        {
             Debug.handleFile(file);
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
 
         List<TableBox> tableBoxes = new ArrayList<>();
         List<Table>    tables     = new ArrayList<>();
 
-        try {
+        try
+        {
             PdfContentExtractor extractor = new PdfContentExtractor(file.getAbsolutePath());
-            for (int pageNumber = 0; pageNumber < extractor.getNumberOfPages(); pageNumber++) {
+            for (int pageNumber = 0; pageNumber < extractor.getNumberOfPages(); pageNumber++)
+            {
                 Debug.setPage(pageNumber);
                 Page page = extractor.getPageContent(pageNumber);
 
                 List<TableBox> pageTableBoxes = findTables(page);
-                for (TableBox tableBox : pageTableBoxes) {
+                for (TableBox tableBox : pageTableBoxes)
+                {
                     tableBox.setPageNumber(pageNumber + 1);
                 }
                 tableBoxes.addAll(pageTableBoxes);
 
-                for (TableBox pageTableBox : pageTableBoxes) {
+                for (TableBox pageTableBox : pageTableBoxes)
+                {
                     Table          table     = recognizeTable(page, pageTableBox);
                     TableOptimizer optimizer = new TableOptimizer();
                     optimizer.optimize(table);
@@ -69,13 +80,16 @@ public class Example {
                 }
                 Debug.setColor(Color.RED);
                 Debug.drawRects(pageTableBoxes);
-                for (TableBox tableBox : pageTableBoxes) {
+                for (TableBox tableBox : pageTableBoxes)
+                {
                     Debug.setColor(Color.GREEN);
                     Debug.drawRects(tableBox.getTableRegions());
-                    for (TableRegion tableRegion : tableBox.getTableRegions()) {
+                    for (TableRegion tableRegion : tableBox.getTableRegions())
+                    {
                         Debug.setColor(Color.BLUE);
                         Debug.drawRects(tableRegion.getTextLines());
-                        for (TextLine textLine : tableRegion.getTextLines()) {
+                        for (TextLine textLine : tableRegion.getTextLines())
+                        {
                             Debug.setColor(Color.CYAN);
                             Debug.drawRects(textLine.getTextBlocks());
                         }
@@ -85,20 +99,26 @@ public class Example {
 
             writeTableBoxes(tableBoxes, file.getName());
             writeTables(tables, file.getName());
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
 
-        try {
+        try
+        {
             Debug.close(SAVE_PDF_DIR + file.getName());
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
 
         return tableBoxes;
     }
 
-    private static TextChunkProcessorConfiguration getDetectionConfiguration() {
+    private static TextChunkProcessorConfiguration getDetectionConfiguration()
+    {
         return new TextChunkProcessorConfiguration()
                             /*VERTICAL FILTERS*/.addFilter(new HorizontalPositionBiHeuristic())
                             .addFilter(new SpaceWidthBiFilter().enableListCheck(true))
@@ -117,7 +137,8 @@ public class Example {
         //                            .setUseCharacterChunks(true);
     }
 
-    private static TextChunkProcessorConfiguration getRecognizingConfiguration() {
+    private static TextChunkProcessorConfiguration getRecognizingConfiguration()
+    {
         return new TextChunkProcessorConfiguration()
                             /*VERTICAL FILTERS*/.addFilter(new HorizontalPositionBiHeuristic())
                             .addFilter(new SpaceWidthBiFilter().enableListCheck(false))
@@ -135,7 +156,8 @@ public class Example {
                             .setRemoveColons(false);
     }
 
-    private static List<TableBox> findTables(Page page) {
+    private static List<TableBox> findTables(Page page)
+    {
         TextChunkProcessorConfiguration configuration =
                 getDetectionConfiguration().addFilter(new LinesBetweenChunksBiHeuristic(page.getRulings()));
         List<TextBlock> textBlocks = new TextChunkProcessor(page, configuration).process();
@@ -145,7 +167,8 @@ public class Example {
         return tableDetector.detect(textBlocks);
     }
 
-    private static Table recognizeTable(Page page, TableBox pageTableBox) {
+    private static Table recognizeTable(Page page, TableBox pageTableBox)
+    {
         Page region = page.getRegion(pageTableBox);
         TextChunkProcessorConfiguration recognitionConfig =
                 getRecognizingConfiguration().addFilter(new LinesBetweenChunksBiHeuristic(page.getRulings()));
@@ -153,23 +176,32 @@ public class Example {
         return recognizer.recognize(region);
     }
 
-    private static void writeTableBoxes(List<TableBox> tableBoxes, String fileName) {
+    private static void writeTableBoxes(List<TableBox> tableBoxes, String fileName)
+    {
         TableBoxToXmlWriter writer = new TableBoxToXmlWriter();
-        try {
+        try
+        {
             writer.write(tableBoxes, fileName,
                          SAVE_PDF_DIR + "xml/" + fileName.substring(0, fileName.lastIndexOf('.')) + "-reg-output.xml");
-        } catch (ParserConfigurationException | TransformerException e) {
+        }
+        catch (ParserConfigurationException | TransformerException e)
+        {
             e.printStackTrace();
         }
     }
 
-    private static void writeTables(List<Table> tables, String fileName) {
-        for (int i = 0; i < tables.size(); i++) {
+    private static void writeTables(List<Table> tables, String fileName)
+    {
+        for (int i = 0; i < tables.size(); i++)
+        {
             Table             table  = tables.get(i);
             TableToHtmlWriter writer = new TableToHtmlWriter();
-            try {
+            try
+            {
                 writer.write(table, SAVE_PDF_DIR + "html/" + fileName + "." + i + ".html");
-            } catch (ParserConfigurationException | TransformerException | IOException e) {
+            }
+            catch (ParserConfigurationException | TransformerException | IOException e)
+            {
                 e.printStackTrace();
             }
         }

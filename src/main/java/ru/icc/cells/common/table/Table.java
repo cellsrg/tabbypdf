@@ -6,18 +6,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Table extends Rectangle {
+public class Table extends Rectangle
+{
     private final List<Row> rows = new ArrayList<>();
 
     private int rowsSize = 0, columnsSize = 0;
 
-    public Table(float left, float bottom, float right, float top) {
+    public Table(float left, float bottom, float right, float top)
+    {
         super(left, bottom, right, top);
     }
 
-    public void addCell(Cell cell, int rowId) {
-        if (rows.size() < rowId + 1) {
-            for (int i = rows.size(); i < rowId + 1; i++) {
+    public void addCell(Cell cell, int rowId)
+    {
+        if (rows.size() < rowId + 1)
+        {
+            for (int i = rows.size(); i < rowId + 1; i++)
+            {
                 rows.add(new Row(rowId));
                 rowsSize++;
             }
@@ -34,21 +39,26 @@ public class Table extends Rectangle {
                           .orElse(0);
     }
 
-    public int getRowsSize() {
+    public int getRowsSize()
+    {
         return rowsSize;
     }
 
-    public int getColumnsSize() {
+    public int getColumnsSize()
+    {
         return columnsSize;
     }
 
-    public Row getRow(int rowNumber) {
+    public Row getRow(int rowNumber)
+    {
         return rows.get(rowNumber);
     }
 
-    public List<Cell> getColumn(int columnNumber) {
+    public List<Cell> getColumn(int columnNumber)
+    {
         List<Cell> columnCells = new ArrayList<>();
-        for (Row row : rows) {
+        for (Row row : rows)
+        {
             columnCells.addAll(row.getCells()
                                   .stream()
                                   .filter(cell -> columnNumber >= cell.getId() &&

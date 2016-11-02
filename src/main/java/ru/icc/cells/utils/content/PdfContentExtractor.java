@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class PdfContentExtractor {
+public class PdfContentExtractor
+{
     private PdfReader              reader;
     private PdfReaderContentParser parser;
     private Map<Integer, MikhailovTextExtractionStrategy> processedText    = new HashMap<>();
@@ -22,22 +23,26 @@ public class PdfContentExtractor {
     private Map<Integer, ImageRegionExtractionStrategy>   processedImages  = new HashMap<>();
 
 
-    public PdfContentExtractor(String path) throws IOException {
+    public PdfContentExtractor(String path) throws IOException
+    {
         this.reader = new PdfReader(path);
         this.parser = new PdfReaderContentParser(reader);
         processImageContent(1);
     }
 
-    public PdfContentExtractor(PdfReader reader) {
+    public PdfContentExtractor(PdfReader reader)
+    {
         this.reader = reader;
         this.parser = new PdfReaderContentParser(reader);
     }
 
-    public int getNumberOfPages() {
+    public int getNumberOfPages()
+    {
         return reader.getNumberOfPages();
     }
 
-    public Page getPageContent(int pageNumber) throws IOException {
+    public Page getPageContent(int pageNumber) throws IOException
+    {
         pageNumber++;
         Rectangle pageBound = reader.getPageSize(pageNumber);
         return new Page(pageBound.getLeft(), pageBound.getBottom(), pageBound.getRight(), pageBound.getTop(),
@@ -45,29 +50,34 @@ public class PdfContentExtractor {
                         getRulings(pageNumber), getImageRegions(pageNumber), getMapping(pageNumber));
     }
 
-    public List<TextChunk> getWordChunks(int pageNumber) throws IOException {
+    public List<TextChunk> getWordChunks(int pageNumber) throws IOException
+    {
         return processTextContent(pageNumber).getResultantWordLocation(
                 (MikhailovTextExtractionStrategy.TextChunkFilter) null);
     }
 
-    public List<TextChunk> getChunks(int pageNumber) throws IOException {
+    public List<TextChunk> getChunks(int pageNumber) throws IOException
+    {
         return processTextContent(pageNumber).getLocationalChunkResult();
     }
 
-    public List<TextChunk> getCharacterChunks(int pageNumber) throws IOException {
+    public List<TextChunk> getCharacterChunks(int pageNumber) throws IOException
+    {
         return processTextContent(pageNumber).getLocationalResult();
     }
 
-    public String getText(int pageNumber) throws IOException {
+    public String getText(int pageNumber) throws IOException
+    {
         return processTextContent(pageNumber).getResultantText();
     }
 
-    private Map<TextChunk,List<TextChunk>> getMapping(int pageNumber) throws IOException {
+    private Map<TextChunk,List<TextChunk>> getMapping(int pageNumber) throws IOException
+    {
         return processTextContent(pageNumber).getOriginalCharacterChunksMapping();
     }
 
-    public List<Ruling> getRulings(int pageNumber) throws IOException {
-
+    public List<Ruling> getRulings(int pageNumber) throws IOException
+    {
         MikhailovExtRenderListener extRenderListener = processGraphicContent(pageNumber);
         List<Ruling> lines = extRenderListener.getAllLines()
                                               .stream()
@@ -83,57 +93,74 @@ public class PdfContentExtractor {
         return lines;
     }
 
-    public List<ru.icc.cells.common.Rectangle> getImageRegions(int pageNumber) throws IOException {
+    public List<ru.icc.cells.common.Rectangle> getImageRegions(int pageNumber) throws IOException
+    {
         return processImageContent(pageNumber).getImageRegions();
     }
 
-    private Ruling mapRectangleToRuling(Rectangle rectangle) {
+    private Ruling mapRectangleToRuling(Rectangle rectangle)
+    {
         float  height = Math.abs(rectangle.getTop() - rectangle.getBottom());
         float  width  = Math.abs(rectangle.getRight() - rectangle.getLeft());
         Ruling ruling;
-        if (height > width) {
+        if (height > width)
+        {
             float x = (rectangle.getLeft() + rectangle.getRight()) / 2;
             ruling = new Ruling(new Point2D.Float(x, rectangle.getBottom()), new Point2D.Float(x, rectangle.getTop()));
-        } else {
+        }
+        else
+        {
             float y = (rectangle.getBottom() + rectangle.getTop()) / 2;
             ruling = new Ruling(new Point2D.Float(rectangle.getLeft(), y), new Point2D.Float(rectangle.getRight(), y));
         }
         return ruling;
     }
 
-    private MikhailovExtRenderListener processGraphicContent(int pageNumber) throws IOException {
+    private MikhailovExtRenderListener processGraphicContent(int pageNumber) throws IOException
+    {
         MikhailovExtRenderListener extRenderListener;
-        if (!processedRulings.containsKey(pageNumber)) {
+        if (!processedRulings.containsKey(pageNumber))
+        {
             extRenderListener = new MikhailovExtRenderListener();
             parser.processContent(pageNumber, extRenderListener);
             processedRulings.put(pageNumber, extRenderListener);
-        } else {
+        }
+        else
+        {
             extRenderListener = processedRulings.get(pageNumber);
         }
         return extRenderListener;
     }
 
 
-    private MikhailovTextExtractionStrategy processTextContent(int pageNumber) throws IOException {
+    private MikhailovTextExtractionStrategy processTextContent(int pageNumber) throws IOException
+    {
         MikhailovTextExtractionStrategy textExtractionStrategy;
-        if (!processedText.containsKey(pageNumber)) {
+        if (!processedText.containsKey(pageNumber))
+        {
             textExtractionStrategy = new MikhailovTextExtractionStrategy(reader.getPageRotation(pageNumber),
                                                                          reader.getPageSize(pageNumber).getWidth());
             parser.processContent(pageNumber, textExtractionStrategy);
             processedText.put(pageNumber, textExtractionStrategy);
-        } else {
+        }
+        else
+        {
             textExtractionStrategy = processedText.get(pageNumber);
         }
         return textExtractionStrategy;
     }
 
-    private ImageRegionExtractionStrategy processImageContent(int pageNumber) throws IOException {
+    private ImageRegionExtractionStrategy processImageContent(int pageNumber) throws IOException
+    {
         ImageRegionExtractionStrategy strategy;
-        if (!processedImages.containsKey(pageNumber)) {
+        if (!processedImages.containsKey(pageNumber))
+        {
             strategy = new ImageRegionExtractionStrategy();
             parser.processContent(pageNumber, strategy);
             processedImages.put(pageNumber, strategy);
-        } else {
+        }
+        else
+        {
             strategy = processedImages.get(pageNumber);
         }
         return strategy;

@@ -11,7 +11,8 @@ import java.util.Stack;
  * Created by sunveil on 23/06/16.
  */
 
-public class MikhailovExtRenderListener implements ExtRenderListener {
+public class MikhailovExtRenderListener implements ExtRenderListener
+{
     public ArrayList<PathPaintingRenderInfo> extList = new ArrayList<PathPaintingRenderInfo>();
 
     public PathConstructionRenderInfo pathConstruction;
@@ -37,14 +38,17 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
     private static int INVISIABLE_LINE = 0;
 
     @Override
-    public void modifyPath(PathConstructionRenderInfo renderInfo) {
+    public void modifyPath(PathConstructionRenderInfo renderInfo)
+    {
         pathConstruction = renderInfo;
         pathStack.add(renderInfo);
         AffineTransform af = new AffineTransform(pathConstruction.getCtm().get(0), pathConstruction.getCtm().get(3),
                                                  pathConstruction.getCtm().get(1), pathConstruction.getCtm().get(4),
                                                  pathConstruction.getCtm().get(3), pathConstruction.getCtm().get(5));
-        switch (pathConstruction.getOperation()) {
-            case PathConstructionRenderInfo.MOVETO: {
+        switch (pathConstruction.getOperation())
+        {
+            case PathConstructionRenderInfo.MOVETO:
+            {
                 float x = pathConstruction.getSegmentData().get(0);
                 float y = pathConstruction.getSegmentData().get(1);
                 x = x + pathConstruction.getCtm().get(6);
@@ -54,7 +58,8 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
                 y0 = (float) af.getTranslateY();
                 break;
             }
-            case PathConstructionRenderInfo.LINETO: {
+            case PathConstructionRenderInfo.LINETO:
+            {
                 float x = pathConstruction.getSegmentData().get(0);
                 float y = pathConstruction.getSegmentData().get(1);
                 x += pathConstruction.getCtm().get(6);
@@ -68,7 +73,8 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
                 tmpLines.add(tmpLine);
                 break;
             }
-            case PathConstructionRenderInfo.RECT: {
+            case PathConstructionRenderInfo.RECT:
+            {
                 float x = pathConstruction.getSegmentData().get(0);
                 float y = pathConstruction.getSegmentData().get(1);
                 x += pathConstruction.getCtm().get(6);
@@ -91,12 +97,14 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
     }
 
     @Override
-    public Path renderPath(PathPaintingRenderInfo renderInfo) {
+    public Path renderPath(PathPaintingRenderInfo renderInfo)
+    {
         extList.add(renderInfo);
         curGs = ReflectionIText.getGs(renderInfo);
         this.rule = renderInfo.getOperation();
         pathStack.clear();
-        if (this.rule != 0) {
+        if (this.rule != 0)
+        {
             allLines.addAll(tmpLines);
             allRectangles.addAll(tmpRectangles);
         }
@@ -106,17 +114,16 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
     }
 
     @Override
-    public void clipPath(int rule) {
-    }
+    public void clipPath(int rule)
+    {}
 
     @Override
-    public void beginTextBlock() {
-
-    }
+    public void beginTextBlock()
+    {}
 
     @Override
-    public void renderText(TextRenderInfo renderInfo) {
-
+    public void renderText(TextRenderInfo renderInfo)
+    {
         AffineTransform af = null;
 
         Matrix ctm = ReflectionIText.getGs(renderInfo).getCtm();
@@ -143,16 +150,15 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
     }
 
     @Override
-    public void endTextBlock() {
-
-    }
+    public void endTextBlock()
+    {}
 
     @Override
-    public void renderImage(ImageRenderInfo renderInfo) {
+    public void renderImage(ImageRenderInfo renderInfo)
+    {}
 
-    }
-
-    public ArrayList<Line> getAllLines() {
+    public ArrayList<Line> getAllLines()
+    {
 //        for (Rectangle r : allRectangles) {
 //            allLines.add(new Line(r.getLeft(), r.getBottom(), r.getRight(), r.getBottom()));
 //            allLines.add(new Line(r.getLeft(), r.getTop(), r.getRight(), r.getTop()));
@@ -162,15 +168,18 @@ public class MikhailovExtRenderListener implements ExtRenderListener {
         return allLines;
     }
 
-    public ArrayList<Rectangle> getAllRectangles() {
+    public ArrayList<Rectangle> getAllRectangles()
+    {
         return allRectangles;
     }
 
-    public ArrayList<Line> getTrashLines() {
+    public ArrayList<Line> getTrashLines()
+    {
         return allTrashLines;
     }
 
-    public ArrayList<Rectangle> getTrashRectangles() {
+    public ArrayList<Rectangle> getTrashRectangles()
+    {
         return allTrashRectangles;
     }
 }

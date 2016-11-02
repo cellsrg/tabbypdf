@@ -8,7 +8,8 @@ import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
 /**
  * Created by sunveil on 23/06/16.
  */
-public class PdfParser {
+public class PdfParser
+{
 
     private String                     path     = "";
     private PdfReader                  reader   = null;
@@ -17,12 +18,13 @@ public class PdfParser {
     private PdfWriter                  writer   = null;
     private PdfStamper                 stamper  = null;
 
-    public PdfParser(String path) {
+    public PdfParser(String path)
+    {
         this.path = path;
     }
 
-    public boolean open() {
-
+    public boolean open()
+    {
         return false;
     }
 

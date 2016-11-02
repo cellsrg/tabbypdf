@@ -15,9 +15,11 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.util.List;
 
-public class TableBoxToXmlWriter {
+public class TableBoxToXmlWriter
+{
     public void write(List<TableBox> tableBoxes, String fileName, String path)
-            throws ParserConfigurationException, TransformerException {
+            throws ParserConfigurationException, TransformerException
+    {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder        docBuilder = docFactory.newDocumentBuilder();
 
@@ -26,7 +28,8 @@ public class TableBoxToXmlWriter {
         rootElement.setAttribute("filename", fileName);
         doc.appendChild(rootElement);
 
-        for (int i = 0; i < tableBoxes.size(); i++) {
+        for (int i = 0; i < tableBoxes.size(); i++)
+        {
             TableBox tableBox = tableBoxes.get(i);
 
             Element table = doc.createElement("table");

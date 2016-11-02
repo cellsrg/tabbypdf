@@ -7,7 +7,8 @@ import java.awt.*;
 /**
  * Interface for pdf writer
  */
-public interface PdfWriter {
+public interface PdfWriter
+{
     /**
      * Set stroking color
      */

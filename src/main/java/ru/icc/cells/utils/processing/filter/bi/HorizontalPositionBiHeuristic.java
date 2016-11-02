@@ -4,16 +4,20 @@ import ru.icc.cells.common.Rectangle;
 import ru.icc.cells.common.TextBlock;
 import ru.icc.cells.common.TextChunk;
 
-public class HorizontalPositionBiHeuristic extends BiHeuristic<Rectangle> {
+public class HorizontalPositionBiHeuristic extends BiHeuristic<Rectangle>
+{
 
-    public HorizontalPositionBiHeuristic() {
+    public HorizontalPositionBiHeuristic()
+    {
         super(Orientation.HORIZONTAL);
     }
 
     @Override
-    public boolean test(Rectangle first, Rectangle second) {
+    public boolean test(Rectangle first, Rectangle second)
+    {
         float lx1, lx2, ty1, ty2, by1, by2;
-        if (first.getClass().equals(TextBlock.class) && second.getClass().equals(TextBlock.class)) {
+        if (first.getClass().equals(TextBlock.class) && second.getClass().equals(TextBlock.class))
+        {
             TextChunk firstChunk  = ((TextBlock) first).getChunks().get(((TextBlock) first).getChunks().size() - 1);
             TextChunk secondChunk = ((TextBlock) second).getChunks().get(0);
             lx1 = firstChunk.getLeft();
@@ -22,7 +26,9 @@ public class HorizontalPositionBiHeuristic extends BiHeuristic<Rectangle> {
             ty2 = secondChunk.getTop();
             by1 = firstChunk.getBottom();
             by2 = secondChunk.getBottom();
-        } else {
+        }
+        else
+        {
             lx1 = first.getLeft();
             lx2 = second.getLeft();
             ty1 = first.getTop();
