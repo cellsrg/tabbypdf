@@ -37,7 +37,7 @@ public class TableBoxToXmlWriter
 
             Element region = doc.createElement("region");
             region.setAttribute("id", String.valueOf(1));
-            region.setAttribute("page", String.valueOf(tableBox.getPageNumber()));
+            region.setAttribute("page", String.valueOf(tableBox.getPageNumber() + 1));
 
             Element bBox = doc.createElement("bounding-box");
             bBox.setAttribute("x1", String.valueOf((int) tableBox.getLeft()));

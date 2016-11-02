@@ -10,6 +10,7 @@ public class TableBox extends Rectangle
 {
     private int pageNumber;
     private List<TableRegion> tableRegions = new ArrayList<>();
+    private TextBlock associatedTableKeyWordBlock;
 
     public TableBox()
     {
@@ -55,5 +56,20 @@ public class TableBox extends Rectangle
     public int getPageNumber()
     {
         return pageNumber;
+    }
+
+    public void setTableRegions(List<TableRegion> tableRegions)
+    {
+        this.tableRegions = tableRegions;
+    }
+
+    public TextBlock getAssociatedTableKeyWordBlock()
+    {
+        return associatedTableKeyWordBlock;
+    }
+
+    public void setAssociatedTableKeyWordBlock(TextBlock associatedTableKeyWordBlock)
+    {
+        this.associatedTableKeyWordBlock = associatedTableKeyWordBlock;
     }
 }

@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 public class Table extends Rectangle
 {
+    private int pageNumber;
+
     private final List<Row> rows = new ArrayList<>();
 
     private int rowsSize = 0, columnsSize = 0;
@@ -68,4 +70,13 @@ public class Table extends Rectangle
         return columnCells;
     }
 
+    public int getPageNumber()
+    {
+        return pageNumber;
+    }
+
+    public void setPageNumber(int pageNumber)
+    {
+        this.pageNumber = pageNumber;
+    }
 }

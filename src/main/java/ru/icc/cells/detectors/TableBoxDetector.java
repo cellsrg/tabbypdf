@@ -141,6 +141,18 @@ class TableBoxDetector implements Detector<TableBox, TableRegion>
             TextBlock currBlock = currLine.getTextBlocks().get(currLine.getTextBlocks().size() - 1);
             TextBlock nextBlock = nextLine.getTextBlocks().get(0);
 
+            if (currReg.getTextLines().size() > 1)
+            {
+                TextLine currRegPrevLine = currReg.getTextLines().get(currReg.getTextLines().size() - 2);
+                if (Math.abs(currRegPrevLine.getBottom() - currLine.getTop() -
+                             (currLine.getBottom() - nextLine.getTop())) < 15)
+                {
+                    nextBox.getTableRegions().forEach(currBox::add);
+                    tableBoxes.remove(i + 1);
+                    i--;
+                    continue;
+                }
+            }
             if (new HeightBiHeuristic().test(currBlock, nextBlock))
             {
                 nextBox.getTableRegions().forEach(currBox::add);

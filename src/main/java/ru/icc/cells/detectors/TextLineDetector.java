@@ -13,11 +13,19 @@ import java.util.List;
  */
 class TextLineDetector implements Detector<TextLine, TextBlock>
 {
+    boolean useSortedTextBlocks;
+
+    public TextLineDetector(boolean useSortedTextBlocks) {
+        this.useSortedTextBlocks = useSortedTextBlocks;
+    }
+
     @Override
     public List<TextLine> detect(List<TextBlock> textBlocks)
     {
         List<TextBlock> sortedTextBlocks = new ArrayList<>(textBlocks);
-        sortedTextBlocks.sort(PageLayoutAlgorithm.RECTANGLE_COMPARATOR);
+        if (useSortedTextBlocks) {
+            sortedTextBlocks.sort(PageLayoutAlgorithm.RECTANGLE_COMPARATOR);
+        }
         List<TextLine> textLines     = new ArrayList<>();
         TextLine       textLine      = null;
         TextBlock      previousBlock = null;
@@ -79,7 +87,7 @@ class TextLineDetector implements Detector<TextLine, TextBlock>
     /**
      * checks if rectangles have intersection of their Y-projections
      */
-    private boolean vProjection(Rectangle rectangle1, Rectangle rectangle2)
+    public static boolean vProjection(Rectangle rectangle1, Rectangle rectangle2)
     {
         return Float.min(rectangle1.getTop(), rectangle2.getTop()) -
                Float.max(rectangle1.getBottom(), rectangle2.getBottom()) >= 0;

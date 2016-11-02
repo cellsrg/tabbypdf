@@ -38,7 +38,7 @@ public class Example
         {
             process(file);
         }
-//                process(new File("src/test/resources/pdf/us-037.pdf"));
+//                process(new File("src/test/resources/pdf/eu-016.pdf"));
     }
 
     private static List<TableBox> process(File file)
@@ -67,7 +67,7 @@ public class Example
                 List<TableBox> pageTableBoxes = findTables(page);
                 for (TableBox tableBox : pageTableBoxes)
                 {
-                    tableBox.setPageNumber(pageNumber + 1);
+                    tableBox.setPageNumber(pageNumber);
                 }
                 tableBoxes.addAll(pageTableBoxes);
 
@@ -76,26 +76,15 @@ public class Example
                     Table          table     = recognizeTable(page, pageTableBox);
                     TableOptimizer optimizer = new TableOptimizer();
                     optimizer.optimize(table);
+                    table.setPageNumber(pageNumber);
                     tables.add(table);
                 }
-                Debug.setColor(Color.RED);
-                Debug.drawRects(pageTableBoxes);
-                for (TableBox tableBox : pageTableBoxes)
-                {
-                    Debug.setColor(Color.GREEN);
-                    Debug.drawRects(tableBox.getTableRegions());
-                    for (TableRegion tableRegion : tableBox.getTableRegions())
-                    {
-                        Debug.setColor(Color.BLUE);
-                        Debug.drawRects(tableRegion.getTextLines());
-                        for (TextLine textLine : tableRegion.getTextLines())
-                        {
-                            Debug.setColor(Color.CYAN);
-                            Debug.drawRects(textLine.getTextBlocks());
-                        }
-                    }
-                }
             }
+
+            removeFalseTableBoxes(tableBoxes, tables);
+
+            drawTBoxes(tableBoxes);
+
 
             writeTableBoxes(tableBoxes, file.getName());
             writeTables(tables, file.getName());
@@ -115,6 +104,54 @@ public class Example
         }
 
         return tableBoxes;
+    }
+
+    private static void removeFalseTableBoxes(List<TableBox> tableBoxes, List<Table> tables) {
+        long tBoxesWithKeyWordsCount =
+                tableBoxes.stream()
+                          .filter(tb -> tb.getAssociatedTableKeyWordBlock() != null)
+                          .count();
+        if (tBoxesWithKeyWordsCount != 0 && tableBoxes.size() != tBoxesWithKeyWordsCount)
+        {
+            List<TableBox> boxesToRemove = new ArrayList<>();
+            List<Table>    tblesToRemove = new ArrayList<>();
+            for (int i = 0; i < tableBoxes.size(); i++)
+            {
+                if (tableBoxes.get(i).getAssociatedTableKeyWordBlock() == null)
+                {
+                    boxesToRemove.add(tableBoxes.get(i));
+                    tblesToRemove.add(tables.get(i));
+                }
+            }
+            tableBoxes.removeAll(boxesToRemove);
+            tables.removeAll(tblesToRemove);
+        }
+    }
+
+    private static void drawTBoxes(List<TableBox> tableBoxes) throws IOException {
+        for (TableBox tableBox : tableBoxes)
+        {
+            Debug.setPage(tableBox.getPageNumber());
+            if (tableBox.getAssociatedTableKeyWordBlock()!=null)
+            {
+                Debug.setColor(Color.MAGENTA);
+                Debug.drawRect(tableBox.getAssociatedTableKeyWordBlock());
+            }
+            Debug.setColor(Color.RED);
+            Debug.drawRect(tableBox);
+            Debug.setColor(Color.GREEN);
+            Debug.drawRects(tableBox.getTableRegions());
+            for (TableRegion tableRegion : tableBox.getTableRegions())
+            {
+                Debug.setColor(Color.BLUE);
+                Debug.drawRects(tableRegion.getTextLines());
+                for (TextLine textLine : tableRegion.getTextLines())
+                {
+                    Debug.setColor(Color.CYAN);
+                    Debug.drawRects(textLine.getTextBlocks());
+                }
+            }
+        }
     }
 
     private static TextChunkProcessorConfiguration getDetectionConfiguration()
@@ -162,9 +199,18 @@ public class Example
                 getDetectionConfiguration().addFilter(new LinesBetweenChunksBiHeuristic(page.getRulings()));
         List<TextBlock> textBlocks = new TextChunkProcessor(page, configuration).process();
 
-        TableDetectorConfiguration cnf = new TableDetectorConfiguration().setMaxNonTableLinesBetweenRegions(1);
+        TableDetectorConfiguration cnf = new TableDetectorConfiguration()
+                .setMaxNonTableLinesBetweenRegions(2)
+                .setUseSortedTextBlocks(true)
+                .setMinRegionGapProjectionIntersection(1);
         TableDetector tableDetector = new TableDetector(cnf);
-        return tableDetector.detect(textBlocks);
+
+        List<TableBox> withSort = tableDetector.detect(textBlocks);
+
+//        cnf.setUseSortedTextBlocks(false);
+//        List<TableBox> noSort = tableDetector.detect(textBlocks);
+
+        return withSort;
     }
 
     private static Table recognizeTable(Page page, TableBox pageTableBox)
