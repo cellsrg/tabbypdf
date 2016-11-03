@@ -173,6 +173,17 @@ class TableBoxDetector implements Detector<TableBox, TableRegion>
 
     private int tcorr(TableRegion region1, TableRegion region2)
     {
+        if (region1.getLeft() > region2.getLeft())
+        {
+            region1.getGaps().get(0).setLeft(region2.getGaps().get(0).getLeft());
+            region1.setLeft(region2.getLeft());
+        }
+        else if (region1.getLeft() < region2.getLeft())
+        {
+            region2.getGaps().get(0).setLeft(region1.getGaps().get(0).getLeft());
+            region2.setLeft(region1.getLeft());
+        }
+
         int result = 0;
         for (Rectangle firstRegionGap : region1.getGaps())
         {

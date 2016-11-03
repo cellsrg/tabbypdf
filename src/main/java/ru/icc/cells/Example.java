@@ -38,7 +38,7 @@ public class Example
         {
             process(file);
         }
-//                process(new File("src/test/resources/pdf/eu-016.pdf"));
+//        process(new File("src/test/resources/pdf/us-007.pdf"));
     }
 
     private static List<TableBox> process(File file)
@@ -200,7 +200,6 @@ public class Example
         List<TextBlock> textBlocks = new TextChunkProcessor(page, configuration).process();
 
         TableDetectorConfiguration cnf = new TableDetectorConfiguration()
-                .setMaxNonTableLinesBetweenRegions(2)
                 .setUseSortedTextBlocks(true)
                 .setMinRegionGapProjectionIntersection(1);
         TableDetector tableDetector = new TableDetector(cnf);

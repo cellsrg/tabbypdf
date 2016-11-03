@@ -48,9 +48,45 @@ public class TableDetector implements Detector<TableBox, TextBlock>
 
     private void stickTablesToKeyWords(List<TextBlock> textBlocks)
     {
-        Pattern tablePattern = Pattern.compile("t\\s*a\\s*b\\s*l\\s*e");
-        Pattern tablesPattern = Pattern.compile("t\\s*a\\s*b\\s*l\\s*e\\s*s\\s+");
-        List<TextBlock> tableKeyWordBlocks = textBlocks
+        List<TextBlock> tableKeyWordBlocks;
+        tableKeyWordBlocks = getTableKeyWordBlocks(textBlocks);
+
+        if (!tableKeyWordBlocks.isEmpty())
+        {
+            for (TableBox tableBox : tableBoxes)
+            {
+                List<TextBlock> upperBlocks = tableKeyWordBlocks.stream()
+                                                                .filter(tb -> tb.getBottom() >= tableBox.getBottom())
+                                                                .collect(Collectors.toList());
+                if (!upperBlocks.isEmpty())
+                {
+                    TextBlock associatedBlock = upperBlocks.stream()
+                                                           .min((tb1, tb2) -> Float.compare(
+                                                                   tb1.getBottom() - tableBox.getBottom(),
+                                                                   tb2.getBottom() - tableBox.getBottom()))
+                                                           .orElse(null);
+                    if (associatedBlock!=null)
+                    {
+                        TextBlock associatedBlocks = new TextBlock();
+                        associatedBlocks.add(associatedBlock);
+                        textBlocks.stream()
+                                  .filter(textBlock -> TextLineDetector.vProjection(associatedBlock, textBlock))
+                                  .forEach(associatedBlocks::add);
+                        tableBox.setAssociatedTableKeyWordBlock(associatedBlocks);
+                        tableBox.setTop(associatedBlocks.getBottom() - 1);
+                        tableKeyWordBlocks.remove(associatedBlock);
+                    }
+                }
+            }
+        }
+    }
+
+    private List<TextBlock> getTableKeyWordBlocks(List<TextBlock> textBlocks) {
+        List<TextBlock> tableKeyWordBlocks;
+
+        Pattern tablePattern  = Pattern.compile(buildWhitespaceDelimiterRegex("table"));
+        Pattern tablesPattern = Pattern.compile(buildWhitespaceDelimiterRegex("tables") + "\\s+");
+        tableKeyWordBlocks = textBlocks
                 .stream()
                 .filter(tb ->
                         {
@@ -79,34 +115,29 @@ public class TableDetector implements Detector<TableBox, TextBlock>
                         })
                 .collect(Collectors.toList());
 
-        if (!tableKeyWordBlocks.isEmpty())
+        Pattern exhibitPattern = Pattern.compile(buildWhitespaceDelimiterRegex("exhibit"));
+        tableKeyWordBlocks.addAll(textBlocks
+                                          .stream()
+                                          .filter(tb ->
+                                                  {
+                                                      String  text = tb.getText().toLowerCase().trim();
+                                                      Matcher m    = exhibitPattern.matcher(text);
+                                                      return (m.find() && m.start() == 0);
+                                                  }).collect(Collectors.toList()));
+        return tableKeyWordBlocks;
+    }
+
+    private String buildWhitespaceDelimiterRegex(String str) {
+        if (str == null || str.isEmpty()) return str;
+        StringBuilder regexBuilder = new StringBuilder();
+        regexBuilder.append(str.charAt(0));
+        String ws = "\\s*";
+        for (int i = 1; i < str.length(); i++)
         {
-            for (TableBox tableBox : tableBoxes)
-            {
-                List<TextBlock> upperBlocks = tableKeyWordBlocks.stream()
-                                                                .filter(tb -> tb.getBottom() >= tableBox.getBottom())
-                                                                .collect(Collectors.toList());
-                if (!upperBlocks.isEmpty())
-                {
-                    TextBlock associatedBlock = upperBlocks.stream()
-                                                           .min((tb1, tb2) -> Float.compare(
-                                                                   tb1.getBottom() - tableBox.getBottom(),
-                                                                   tb2.getBottom() - tableBox.getBottom()))
-                                                           .orElse(null);
-                    if (associatedBlock!=null)
-                    {
-                        TextBlock associatedBlocks = new TextBlock();
-                        associatedBlocks.add(associatedBlock);
-                        textBlocks.stream()
-                                  .filter(textBlock -> TextLineDetector.vProjection(associatedBlock, textBlock))
-                                  .forEach(associatedBlocks::add);
-                        tableBox.setAssociatedTableKeyWordBlock(associatedBlocks);
-                        tableBox.setTop(associatedBlocks.getBottom() - 5);
-                        tableKeyWordBlocks.remove(associatedBlock);
-                    }
-                }
-            }
+            regexBuilder.append(ws);
+            regexBuilder.append(str.charAt(i));
         }
+        return regexBuilder.toString();
     }
 
     public List<TextLine> getTextLines()
