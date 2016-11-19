@@ -13,17 +13,18 @@ class TableBoxDetector implements Detector<TableBox, TableRegion>
 {
 
     private List<TextLine> pageTextLines;
-    private int            maxNonTableLinesBetweenRegions;
-    private int            minProjectionIntersection;
-    private double         gapThreshold;
+    private int            maxNonTableLinesBetweenRegions = 2;
+    private int            minProjectionIntersection = 0;
+    private double         gapThreshold = 0.8;
+    private double         maxDistanceBetweenRegions = 48;
 
     public TableBoxDetector(List<TextLine> pageTextLines)
     {
-        this(pageTextLines, 2, 0, 0.8);
+        this.pageTextLines = pageTextLines;
     }
 
     public TableBoxDetector(List<TextLine> pageTextLines, int maxNonTableLinesBetweenRegions,
-                            int minProjectionIntersection, double gapThreshold)
+                            int minProjectionIntersection, double gapThreshold, double maxDistanceBetweenRegions)
     {
         if (minProjectionIntersection < 0)
             throw new IllegalArgumentException("minProjectionIntersection should be greater or equal 0");
@@ -35,6 +36,7 @@ class TableBoxDetector implements Detector<TableBox, TableRegion>
         this.maxNonTableLinesBetweenRegions = maxNonTableLinesBetweenRegions;
         this.minProjectionIntersection = minProjectionIntersection;
         this.gapThreshold = gapThreshold;
+        this.maxDistanceBetweenRegions = maxDistanceBetweenRegions;
     }
 
     public int getMaxNonTableLinesBetweenRegions()
@@ -100,9 +102,10 @@ class TableBoxDetector implements Detector<TableBox, TableRegion>
             TableRegion nextRegion = regions.get(i);
             tableBox.add(prevRegion);
 
-            if (!(TableRegionDetector.getCountOfTextLinesBetween(pageTextLines, prevRegion, nextRegion) <=
-                  maxNonTableLinesBetweenRegions &&
-                  tcorr(prevRegion, nextRegion) / (double) prevRegion.getGaps().size() >= gapThreshold))
+            if ((!(TableRegionDetector.getCountOfTextLinesBetween(pageTextLines, prevRegion, nextRegion) <=
+                   maxNonTableLinesBetweenRegions &&
+                   tcorr(prevRegion, nextRegion) / (double) prevRegion.getGaps().size() >= gapThreshold)) ||
+                Math.abs(prevRegion.getBottom() - nextRegion.getTop()) > maxDistanceBetweenRegions)
             {
                 tableBoxes.add(tableBox);
                 tableBox = null;

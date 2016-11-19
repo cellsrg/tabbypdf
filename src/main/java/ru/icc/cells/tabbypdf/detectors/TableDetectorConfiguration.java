@@ -8,6 +8,7 @@ public class TableDetectorConfiguration
     int     minRegionGapProjectionIntersection   = 0;
     double  gapThreshold                         = 0.8;
     boolean useSortedTextBlocks                  = true;
+    double  maxDistanceBetweenRegions            = 48;
 
     /**
      * Default value is 0
@@ -59,6 +60,11 @@ public class TableDetectorConfiguration
      */
     public TableDetectorConfiguration setUseSortedTextBlocks(boolean useSortedTextBlocks) {
         this.useSortedTextBlocks = useSortedTextBlocks;
+        return this;
+    }
+
+    public TableDetectorConfiguration setMaxDistanceBetweenRegions(double maxDistanceBetweenRegions) {
+        this.maxDistanceBetweenRegions = maxDistanceBetweenRegions;
         return this;
     }
 }

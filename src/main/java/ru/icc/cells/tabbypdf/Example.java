@@ -7,6 +7,7 @@ import ru.icc.cells.tabbypdf.detectors.TableDetector;
 import ru.icc.cells.tabbypdf.detectors.TableDetectorConfiguration;
 import ru.icc.cells.tabbypdf.recognizers.SimpleTableRecognizer;
 import ru.icc.cells.tabbypdf.recognizers.TableOptimizer;
+import ru.icc.cells.tabbypdf.utils.content.PdfContentExtractor;
 import ru.icc.cells.tabbypdf.utils.processing.TextChunkProcessor;
 import ru.icc.cells.tabbypdf.utils.processing.TextChunkProcessorConfiguration;
 import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
@@ -14,8 +15,8 @@ import ru.icc.cells.tabbypdf.utils.processing.filter.bi.*;
 import ru.icc.cells.tabbypdf.utils.processing.filter.tri.CutInAfterTriHeuristic;
 import ru.icc.cells.tabbypdf.utils.processing.filter.tri.CutInBeforeTriHeuristic;
 import ru.icc.cells.tabbypdf.writers.TableBoxToXmlWriter;
-import ru.icc.cells.tabbypdf.utils.content.PdfContentExtractor;
 import ru.icc.cells.tabbypdf.writers.TableToHtmlWriter;
+import ru.icc.cells.tabbypdf.writers.TableToXmlWriter;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -229,7 +230,7 @@ public class Example
         try
         {
             writer.write(tableBoxes, fileName,
-                         TEST_PDF_DIR + fileName.substring(0, fileName.lastIndexOf('.')) + "-reg-result.xml");
+                         SAVE_PDF_DIR + "xml/" + fileName.substring(0, fileName.lastIndexOf('.')) + "-reg-output.xml");
         }
         catch (ParserConfigurationException | TransformerException e)
         {
@@ -251,6 +252,16 @@ public class Example
             {
                 e.printStackTrace();
             }
+        }
+        TableToXmlWriter tableToXmlWriter = new TableToXmlWriter();
+        try
+        {
+            tableToXmlWriter.write(tables,fileName,
+                                   SAVE_PDF_DIR + "xml/" + fileName.substring(0, fileName.lastIndexOf('.')) + "-str-output.xml");
+        }
+        catch (ParserConfigurationException | TransformerException e)
+        {
+            e.printStackTrace();
         }
     }
 }

@@ -38,7 +38,7 @@ public class TableDetector implements Detector<TableBox, TextBlock>
         tableRegions = new TableRegionDetector(cnf.minTextLineGapProjectionIntersection, cnf.minWhitespaceWidth)
                 .detect(textLines);
         tableBoxes = new TableBoxDetector(textLines, cnf.maxNonTableLinesBetweenRegions,
-                                          cnf.minRegionGapProjectionIntersection, cnf.gapThreshold)
+                                          cnf.minRegionGapProjectionIntersection, cnf.gapThreshold, cnf.maxDistanceBetweenRegions)
                 .detect(tableRegions);
 
         stickTablesToKeyWords(textBlocks);
@@ -115,15 +115,19 @@ public class TableDetector implements Detector<TableBox, TextBlock>
                         })
                 .collect(Collectors.toList());
 
-        Pattern exhibitPattern = Pattern.compile(buildWhitespaceDelimiterRegex("exhibit"));
-        tableKeyWordBlocks.addAll(textBlocks
-                                          .stream()
-                                          .filter(tb ->
-                                                  {
-                                                      String  text = tb.getText().toLowerCase().trim();
-                                                      Matcher m    = exhibitPattern.matcher(text);
-                                                      return (m.find() && m.start() == 0);
-                                                  }).collect(Collectors.toList()));
+        if (tableKeyWordBlocks.isEmpty())
+        {
+            Pattern exhibitPattern = Pattern.compile(buildWhitespaceDelimiterRegex("exhibit"));
+            tableKeyWordBlocks.addAll(textBlocks
+                                              .stream()
+                                              .filter(tb ->
+                                                      {
+                                                          String  text = tb.getText().toLowerCase().trim();
+                                                          Matcher m    = exhibitPattern.matcher(text);
+                                                          return (m.find() && m.start() == 0);
+                                                      }).collect(Collectors.toList()));
+
+        }
         return tableKeyWordBlocks;
     }
 

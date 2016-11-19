@@ -1,5 +1,6 @@
 package ru.icc.cells.tabbypdf.utils.content;
 
+import ru.icc.cells.tabbypdf.common.TextBlock;
 import ru.icc.cells.tabbypdf.common.TextChunk;
 
 import java.util.stream.Stream;
@@ -38,5 +39,75 @@ public class FontUtils
             }
         }
         return fontAttributes;
+    }
+
+    public static boolean isBold(TextChunk chunk)
+    {
+        String[][] fontNameArrays = chunk.getChunkFont().getFamilyFontName();
+        for (String[] fontNameArray : fontNameArrays) {
+            for (String fontName : fontNameArray) {
+                if (fontName.toLowerCase().contains("bold")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isBold(TextBlock block)
+    {
+        for (TextChunk chunk : block.getChunks())
+        {
+            if (isBold(chunk))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isItalic(TextChunk chunk)
+    {
+        String[][] fontNameArrays = chunk.getChunkFont().getFamilyFontName();
+        for (String[] fontNameArray : fontNameArrays)
+        {
+            for (String fontName : fontNameArray)
+            {
+                if (fontName.toLowerCase().contains("italic"))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isItalic(TextBlock block)
+    {
+        for (TextChunk chunk : block.getChunks())
+        {
+            if (isItalic(chunk))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isRegular(TextChunk chunk)
+    {
+        return !isItalic(chunk) && !isBold(chunk);
+    }
+
+    public static boolean isRegular(TextBlock block)
+    {
+        for (TextChunk chunk : block.getChunks())
+        {
+            if (isRegular(chunk))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
