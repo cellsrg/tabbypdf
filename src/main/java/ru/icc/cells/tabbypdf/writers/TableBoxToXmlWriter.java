@@ -7,19 +7,22 @@ import ru.icc.cells.tabbypdf.common.TableBox;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
 import java.util.List;
 
-public class TableBoxToXmlWriter
+public class TableBoxToXmlWriter implements Writer<TableBox, String>
 {
-    public void write(List<TableBox> tableBoxes, String fileName, String path)
-            throws ParserConfigurationException, TransformerException
-    {
+    private String fileName;
+
+    public TableBoxToXmlWriter(String fileName) {
+        this.fileName = fileName;
+    }
+
+    @Override
+    public String write(List<TableBox> tables) throws TransformerException, ParserConfigurationException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder        docBuilder = docFactory.newDocumentBuilder();
 
@@ -28,9 +31,9 @@ public class TableBoxToXmlWriter
         rootElement.setAttribute("filename", fileName);
         doc.appendChild(rootElement);
 
-        for (int i = 0; i < tableBoxes.size(); i++)
+        for (int i = 0; i < tables.size(); i++)
         {
-            TableBox tableBox = tableBoxes.get(i);
+            TableBox tableBox = tables.get(i);
 
             Element table = doc.createElement("table");
             table.setAttribute("id", String.valueOf(i + 1));
@@ -54,9 +57,10 @@ public class TableBoxToXmlWriter
         Transformer        transformer        = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         DOMSource          source             = new DOMSource(doc);
-        StreamResult       result             = new StreamResult(path);
+        StringWriter stringWriter = new StringWriter();
+        transformer.transform(source, new StreamResult(stringWriter));
+        String result = stringWriter.getBuffer().toString().replaceAll("\n|\r", "");
 
-        transformer.transform(source, result);
+        return result;
     }
-
 }

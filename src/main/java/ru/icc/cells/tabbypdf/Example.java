@@ -1,19 +1,13 @@
 package ru.icc.cells.tabbypdf;
 
-import ru.icc.cells.tabbypdf.common.*;
+import ru.icc.cells.tabbypdf.common.Page;
+import ru.icc.cells.tabbypdf.common.TableBox;
+import ru.icc.cells.tabbypdf.common.TableRegion;
+import ru.icc.cells.tabbypdf.common.TextLine;
 import ru.icc.cells.tabbypdf.common.table.Table;
 import ru.icc.cells.tabbypdf.debug.Debug;
-import ru.icc.cells.tabbypdf.detectors.TableDetector;
-import ru.icc.cells.tabbypdf.detectors.TableDetectorConfiguration;
-import ru.icc.cells.tabbypdf.recognizers.SimpleTableRecognizer;
 import ru.icc.cells.tabbypdf.recognizers.TableOptimizer;
 import ru.icc.cells.tabbypdf.utils.content.PdfContentExtractor;
-import ru.icc.cells.tabbypdf.utils.processing.TextChunkProcessor;
-import ru.icc.cells.tabbypdf.utils.processing.TextChunkProcessorConfiguration;
-import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
-import ru.icc.cells.tabbypdf.utils.processing.filter.bi.*;
-import ru.icc.cells.tabbypdf.utils.processing.filter.tri.CutInAfterTriHeuristic;
-import ru.icc.cells.tabbypdf.utils.processing.filter.tri.CutInBeforeTriHeuristic;
 import ru.icc.cells.tabbypdf.writers.TableBoxToXmlWriter;
 import ru.icc.cells.tabbypdf.writers.TableToHtmlWriter;
 import ru.icc.cells.tabbypdf.writers.TableToXmlWriter;
@@ -22,6 +16,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.awt.*;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +28,7 @@ public class Example
 
     public static void main(String[] args) throws IOException, TransformerException, ParserConfigurationException
     {
-        Debug.ENABLE_DEBUG = true;
+        Debug.ENABLE_DEBUG = false;
         File folder = new File(TEST_PDF_DIR);
         for (File file : folder.listFiles(File::isFile))
         {
@@ -67,7 +62,7 @@ public class Example
                 Debug.setPage(pageNumber);
                 Page page = extractor.getPageContent(pageNumber);
 
-                List<TableBox> pageTableBoxes = findTables(page);
+                List<TableBox> pageTableBoxes = App.findTables(page);
                 for (TableBox tableBox : pageTableBoxes)
                 {
                     tableBox.setPageNumber(pageNumber);
@@ -76,7 +71,7 @@ public class Example
 
                 for (TableBox pageTableBox : pageTableBoxes)
                 {
-                    Table          table     = recognizeTable(page, pageTableBox);
+                    Table          table     = App.recognizeTable(page, pageTableBox);
                     TableOptimizer optimizer = new TableOptimizer();
                     optimizer.optimize(table);
                     table.setPageNumber(pageNumber);
@@ -84,7 +79,7 @@ public class Example
                 }
             }
 
-            removeFalseTableBoxes(tableBoxes, tables);
+            App.removeFalseTableBoxes(tableBoxes, tables);
 
             drawTBoxes(tableBoxes);
 
@@ -107,28 +102,6 @@ public class Example
         }
 
         return tableBoxes;
-    }
-
-    private static void removeFalseTableBoxes(List<TableBox> tableBoxes, List<Table> tables) {
-        long tBoxesWithKeyWordsCount =
-                tableBoxes.stream()
-                          .filter(tb -> tb.getAssociatedTableKeyWordBlock() != null)
-                          .count();
-        if (tBoxesWithKeyWordsCount != 0 && tableBoxes.size() != tBoxesWithKeyWordsCount)
-        {
-            List<TableBox> boxesToRemove = new ArrayList<>();
-            List<Table>    tblesToRemove = new ArrayList<>();
-            for (int i = 0; i < tableBoxes.size(); i++)
-            {
-                if (tableBoxes.get(i).getAssociatedTableKeyWordBlock() == null)
-                {
-                    boxesToRemove.add(tableBoxes.get(i));
-                    tblesToRemove.add(tables.get(i));
-                }
-            }
-            tableBoxes.removeAll(boxesToRemove);
-            tables.removeAll(tblesToRemove);
-        }
     }
 
     private static void drawTBoxes(List<TableBox> tableBoxes) throws IOException {
@@ -157,82 +130,17 @@ public class Example
         }
     }
 
-    private static TextChunkProcessorConfiguration getDetectionConfiguration()
-    {
-        return new TextChunkProcessorConfiguration()
-                            /*VERTICAL FILTERS*/.addFilter(new HorizontalPositionBiHeuristic())
-                            .addFilter(new SpaceWidthBiFilter().enableListCheck(true))
-                            /*HORIZONTAL FILTERS*/
-                            .addFilter(new VerticalPositionBiHeuristic())
-                            .addFilter(new HeightBiHeuristic())
-                            .addFilter(new CutInAfterTriHeuristic())
-                            .addFilter(new CutInBeforeTriHeuristic())
-                            /*COMMON FILTERS*/
-                            .addFilter(new EqualFontFamilyBiHeuristic(Heuristic.Orientation.VERTICAL))
-                            .addFilter(new EqualFontAttributesBiHeuristic(Heuristic.Orientation.VERTICAL))
-                            .addFilter(new EqualFontSizeBiHeuristic(Heuristic.Orientation.VERTICAL))
-                            /*REPLACE STRINGS*/
-                            .addStringsToReplace(new String[]{"•", "", " ", "_", "\u0002"/**/})
-                            .setRemoveColons(true);
-        //                            .setUseCharacterChunks(true);
-    }
-
-    private static TextChunkProcessorConfiguration getRecognizingConfiguration()
-    {
-        return new TextChunkProcessorConfiguration()
-                            /*VERTICAL FILTERS*/.addFilter(new HorizontalPositionBiHeuristic())
-                            .addFilter(new SpaceWidthBiFilter().enableListCheck(false))
-                            /*HORIZONTAL FILTERS*/
-                            .addFilter(new VerticalPositionBiHeuristic())
-                            .addFilter(new HeightBiHeuristic())
-                            .addFilter(new CutInAfterTriHeuristic())
-                            .addFilter(new CutInBeforeTriHeuristic())
-                            /*COMMON FILTERS*/
-                            .addFilter(new EqualFontFamilyBiHeuristic(Heuristic.Orientation.VERTICAL))
-                            .addFilter(new EqualFontAttributesBiHeuristic(Heuristic.Orientation.VERTICAL))
-                            .addFilter(new EqualFontSizeBiHeuristic(Heuristic.Orientation.VERTICAL))
-                            /*REPLACE STRINGS*/
-                            .addStringsToReplace(new String[]{"•", "", " ", "_", "\u0002"/**/})
-                            .setRemoveColons(false);
-    }
-
-    private static List<TableBox> findTables(Page page)
-    {
-        TextChunkProcessorConfiguration configuration =
-                getDetectionConfiguration().addFilter(new LinesBetweenChunksBiHeuristic(page.getRulings()));
-        List<TextBlock> textBlocks = new TextChunkProcessor(page, configuration).process();
-
-        TableDetectorConfiguration cnf = new TableDetectorConfiguration()
-                .setUseSortedTextBlocks(true)
-                .setMinRegionGapProjectionIntersection(1);
-        TableDetector tableDetector = new TableDetector(cnf);
-
-        List<TableBox> withSort = tableDetector.detect(textBlocks);
-
-//        cnf.setUseSortedTextBlocks(false);
-//        List<TableBox> noSort = tableDetector.detect(textBlocks);
-
-        return withSort;
-    }
-
-    private static Table recognizeTable(Page page, TableBox pageTableBox)
-    {
-        Page region = page.getRegion(pageTableBox);
-        TextChunkProcessorConfiguration recognitionConfig =
-                getRecognizingConfiguration().addFilter(new LinesBetweenChunksBiHeuristic(page.getRulings()));
-        SimpleTableRecognizer recognizer = new SimpleTableRecognizer(recognitionConfig);
-        return recognizer.recognize(region);
-    }
-
     private static void writeTableBoxes(List<TableBox> tableBoxes, String fileName)
     {
-        TableBoxToXmlWriter writer = new TableBoxToXmlWriter();
+        TableBoxToXmlWriter writer = new TableBoxToXmlWriter(fileName);
         try
         {
-            writer.write(tableBoxes, fileName,
-                         SAVE_PDF_DIR + "xml/" + fileName.substring(0, fileName.lastIndexOf('.')) + "-reg-output.xml");
+            FileWriter fileWriter = new FileWriter(
+                    SAVE_PDF_DIR + "xml/" + fileName.substring(0, fileName.lastIndexOf('.')) + "-reg-output.xml");
+            fileWriter.write(writer.write(tableBoxes));
+            fileWriter.close();
         }
-        catch (ParserConfigurationException | TransformerException e)
+        catch (ParserConfigurationException | TransformerException | IOException e)
         {
             e.printStackTrace();
         }
@@ -246,20 +154,21 @@ public class Example
             TableToHtmlWriter writer = new TableToHtmlWriter();
             try
             {
-                writer.write(table, SAVE_PDF_DIR + "html/" + fileName + "." + i + ".html");
+                FileWriter fileWriter = new FileWriter(SAVE_PDF_DIR + "html/" + fileName + "." + i + ".html");
+                fileWriter.write(writer.write(table));
             }
             catch (ParserConfigurationException | TransformerException | IOException e)
             {
                 e.printStackTrace();
             }
         }
-        TableToXmlWriter tableToXmlWriter = new TableToXmlWriter();
+        TableToXmlWriter tableToXmlWriter = new TableToXmlWriter(fileName);
         try
         {
-            tableToXmlWriter.write(tables,fileName,
-                                   SAVE_PDF_DIR + "xml/" + fileName.substring(0, fileName.lastIndexOf('.')) + "-str-output.xml");
+            FileWriter fileWriter = new FileWriter(SAVE_PDF_DIR + "xml/" + fileName.substring(0, fileName.lastIndexOf('.')) + "-str-output.xml");
+            fileWriter.write(tableToXmlWriter.write(tables));
         }
-        catch (ParserConfigurationException | TransformerException e)
+        catch (ParserConfigurationException | TransformerException | IOException e)
         {
             e.printStackTrace();
         }

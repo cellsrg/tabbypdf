@@ -11,13 +11,22 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
 import java.util.List;
 
 /**
  * Created by Андрей on 19.11.2016.
  */
-public class TableToXmlWriter {
-    public void write(List<Table> tables, String fileName, String path)
+public class TableToXmlWriter implements Writer<Table, String> {
+
+    private String fileName;
+
+    public TableToXmlWriter(String fileName) {
+        this.fileName = fileName;
+    }
+
+    @Override
+    public String write(List<Table> tables)
             throws ParserConfigurationException, TransformerException {
         DocumentBuilderFactory  docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -76,9 +85,10 @@ public class TableToXmlWriter {
         Transformer        transformer        = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         DOMSource    source = new DOMSource(doc);
-        StreamResult result = new StreamResult(path);
+        StringWriter writer = new StringWriter();
 
-        transformer.transform(source, result);
+        transformer.transform(source, new StreamResult(writer));
+        return writer.getBuffer().toString();
     }
 
 }

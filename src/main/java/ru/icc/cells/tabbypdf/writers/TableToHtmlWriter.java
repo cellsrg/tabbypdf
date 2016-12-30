@@ -16,11 +16,23 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
-public class TableToHtmlWriter
+public class TableToHtmlWriter implements Writer<Table, List<String>>
 {
+    @Override
+    public List<String> write(List<Table> tables)
+            throws IOException, TransformerException, ParserConfigurationException {
+        List<String> result = new ArrayList<>();
+        for (Table table : tables) {
+            result.add(write(table));
+        }
+        return result;
+    }
 
-    public void write(Table table, String path) throws ParserConfigurationException, TransformerException, IOException
+    public String write(Table table) throws ParserConfigurationException, TransformerException, IOException
     {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder        docBuilder = docFactory.newDocumentBuilder();
@@ -37,9 +49,10 @@ public class TableToHtmlWriter
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         DOMSource    source = new DOMSource(doc);
-        StreamResult result = new StreamResult(path);
+        StringWriter writer = new StringWriter();
+        transformer.transform(source, new StreamResult(writer));
 
-        transformer.transform(source, result);
+        return writer.getBuffer().toString();
     }
 
     private void handleTable(Table table, Document doc, Element root)
