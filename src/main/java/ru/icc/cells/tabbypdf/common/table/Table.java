@@ -51,6 +51,10 @@ public class Table extends Rectangle
         return columnsSize;
     }
 
+    public List<Row> getRows() {
+        return rows;
+    }
+
     public Row getRow(int rowNumber)
     {
         return rows.get(rowNumber);

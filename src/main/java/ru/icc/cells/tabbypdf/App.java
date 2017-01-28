@@ -1,5 +1,6 @@
 package ru.icc.cells.tabbypdf;
 
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -9,6 +10,8 @@ import ru.icc.cells.tabbypdf.common.TextBlock;
 import ru.icc.cells.tabbypdf.common.table.Table;
 import ru.icc.cells.tabbypdf.detectors.TableDetector;
 import ru.icc.cells.tabbypdf.detectors.TableDetectorConfiguration;
+import ru.icc.cells.tabbypdf.exceptions.EmptyArgumentException;
+import ru.icc.cells.tabbypdf.exceptions.TableExtractionException;
 import ru.icc.cells.tabbypdf.recognizers.SimpleTableRecognizer;
 import ru.icc.cells.tabbypdf.recognizers.TableOptimizer;
 import ru.icc.cells.tabbypdf.utils.content.PdfContentExtractor;
@@ -18,11 +21,14 @@ import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
 import ru.icc.cells.tabbypdf.utils.processing.filter.bi.*;
 import ru.icc.cells.tabbypdf.utils.processing.filter.tri.CutInAfterTriHeuristic;
 import ru.icc.cells.tabbypdf.utils.processing.filter.tri.CutInBeforeTriHeuristic;
+import ru.icc.cells.tabbypdf.writers.TableToExcelWriter;
 import ru.icc.cells.tabbypdf.writers.TableToHtmlWriter;
 import ru.icc.cells.tabbypdf.writers.TableToXmlWriter;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,29 +46,10 @@ public class App {
     private String xmlFile;
     @Option(name="-html", usage = "Resulting html file")
     private String htmlFile;
+    @Option(name="-excel", usage = "Resulting excel file")
+    private String excelFile;
 
     private List<Table> extractedTables;
-
-
-    private class EmptyArgumentException extends RuntimeException {
-        public EmptyArgumentException() {
-            super();
-        }
-
-        public EmptyArgumentException(String message) {
-            super(message);
-        }
-    }
-
-    private class TableExtractionException extends RuntimeException {
-        public TableExtractionException() {
-            super();
-        }
-
-        public TableExtractionException(String message) {
-            super(message);
-        }
-    }
 
     public static void main(String[] args) {
         new App().run(args);
@@ -74,15 +61,14 @@ public class App {
         try {
             parser.parseArgument(args);
             checkArgThrowIfEmpty(file);
-            checkArgsThrowIfAllEmpty(xmlFile, htmlFile);
+            checkArgsThrowIfAllEmpty(xmlFile, htmlFile, excelFile);
 
             extract();
 
             if (checkArgIsNotEmpty(xmlFile)) {
                 TableToXmlWriter writer = new TableToXmlWriter(file);
-                try {
+                try (FileWriter fileWriter = new FileWriter(xmlFile)) {
                     String xmlString = writer.write(extractedTables);
-                    FileWriter fileWriter = new FileWriter(xmlFile);
                     fileWriter.write(xmlString);
                 } catch (ParserConfigurationException | TransformerException e) {
                     System.err.println("Can not extract tables.");
@@ -93,17 +79,30 @@ public class App {
 
             if (checkArgIsNotEmpty(htmlFile)) {
                 TableToHtmlWriter writer = new TableToHtmlWriter();
-                try {
+                try (FileWriter fileWriter = new FileWriter(htmlFile)) {
                     String htmlString = writer
                             .write(extractedTables)
                             .stream()
                             .collect(Collectors.joining("<br><br><br>"));
-                    FileWriter fileWriter = new FileWriter(htmlFile);
                     fileWriter.write(htmlString);
                 } catch (ParserConfigurationException | TransformerException e) {
                     System.err.println("Can not extract tables.");
                 } catch (IOException e) {
                     System.err.println("Can not create file " + htmlFile);
+                }
+            }
+
+            if (checkArgIsNotEmpty(excelFile)) {
+                TableToExcelWriter writer = new TableToExcelWriter();
+
+                try (FileOutputStream fileOutputStream = new FileOutputStream(excelFile)) {
+                    XSSFWorkbook workbook = writer.write(extractedTables);
+                    workbook.write(fileOutputStream);
+                    workbook.close();
+                } catch (FileNotFoundException e) {
+                    System.err.println("Can not create file " + excelFile);
+                } catch (IOException e) {
+                    System.err.println("Can not write file " + excelFile);
                 }
             }
 
@@ -117,19 +116,19 @@ public class App {
 
     private void checkArgsThrowIfAllEmpty(String... args) {
         if (!Stream.of(args).anyMatch(this::checkArgIsNotEmpty)) {
-            throw new EmptyArgumentException();
+            throw new EmptyArgumentException("At least one of these options must be specified: -xml, -excel, -html.");
         }
     }
 
     private void checkArgThrowIfEmpty(String arg) {
-        if (!checkArgIsNotEmpty(arg)) throw new EmptyArgumentException();
+        if (!checkArgIsNotEmpty(arg)) throw new EmptyArgumentException("Required option was not specified.");
     }
 
     private boolean checkArgIsNotEmpty(String arg) {
         return arg != null && !arg.isEmpty();
     }
 
-    public void extract() {
+    public void extract() throws TableExtractionException {
         try {
             PdfContentExtractor extractor = new PdfContentExtractor(file);
             List<TableBox> tableBoxes = new ArrayList<>();

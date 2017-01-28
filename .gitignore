@@ -4,3 +4,4 @@
 *.class
 lib/
 target/
+src/test/resources/pdf/edit/
