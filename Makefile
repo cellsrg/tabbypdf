@@ -1,6 +1,6 @@
 .PHONY: assembly-single single jar install build compile clean all run
 
-VERSION=1.0-SNAPSHOT
+VERSION=0.2
 JAR=target/tabbypdf-$(VERSION)-jar-with-dependencies.jar
 SRC=$(shell find src -name "*.java")
 RES=src/test/resources/pdf
@@ -32,6 +32,6 @@ clean:
 	rm -rf $(RES)/edit/*.pdf
 
 run: assembly-single
-	java -jar $(JAR)
+	java -cp $(JAR) ru.icc.cells.tabbypdf.Example
 
 
