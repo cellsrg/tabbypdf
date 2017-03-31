@@ -4,3 +4,7 @@
 *.class
 lib/
 target/
+src/test/resources/pdf/edit/*.pdf
+src/test/resources/pdf/edit/xml/*.xml
+src/test/resources/pdf/edit/html/*.htm*
+
