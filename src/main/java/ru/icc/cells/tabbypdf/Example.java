@@ -156,6 +156,7 @@ public class Example
             {
                 FileWriter fileWriter = new FileWriter(SAVE_PDF_DIR + "html/" + fileName + "." + i + ".html");
                 fileWriter.write(writer.write(table));
+                fileWriter.close();
             }
             catch (ParserConfigurationException | TransformerException | IOException e)
             {
@@ -167,6 +168,7 @@ public class Example
         {
             FileWriter fileWriter = new FileWriter(SAVE_PDF_DIR + "xml/" + fileName.substring(0, fileName.lastIndexOf('.')) + "-str-output.xml");
             fileWriter.write(tableToXmlWriter.write(tables));
+            fileWriter.close();
         }
         catch (ParserConfigurationException | TransformerException | IOException e)
         {

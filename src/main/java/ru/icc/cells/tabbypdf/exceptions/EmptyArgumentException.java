@@ -4,7 +4,12 @@ package ru.icc.cells.tabbypdf.exceptions;
  * @author aaltaev
  */
 public class EmptyArgumentException extends IllegalArgumentException {
-    public EmptyArgumentException() {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -1772176241681819558L;
+
+	public EmptyArgumentException() {
         super();
     }
 

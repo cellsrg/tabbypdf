@@ -4,7 +4,12 @@ package ru.icc.cells.tabbypdf.exceptions;
  * @author aaltaev
  */
 public class TableExtractionException extends Exception {
-    public TableExtractionException() {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -3362896806940945907L;
+
+	public TableExtractionException() {
         super();
     }
 

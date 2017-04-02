@@ -11,7 +11,7 @@ public abstract class BiHeuristic<T extends Rectangle> implements Heuristic
 
     private final Class<T> targetClass;
 
-    public BiHeuristic(Orientation orientation)
+	public BiHeuristic(Orientation orientation)
     {
         this.orientation = orientation;
         this.targetClass =

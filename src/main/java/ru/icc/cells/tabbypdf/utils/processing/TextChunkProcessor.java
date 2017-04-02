@@ -20,7 +20,7 @@ public class TextChunkProcessor
 {
     private Page                            page;
     private TextChunkProcessorConfiguration cnf;
-    private List<BiHeuristic>               horizontalBiHeuristics;
+	private List<BiHeuristic>               horizontalBiHeuristics;
     private List<TriHeuristic>              horizontalTriHeuristics;
     private List<BiHeuristic>               verticalBiHeuristics;
     private List<TriHeuristic>              verticalTriHeuristics;
