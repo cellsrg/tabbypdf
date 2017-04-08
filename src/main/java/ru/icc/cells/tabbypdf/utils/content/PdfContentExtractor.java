@@ -36,6 +36,10 @@ public class PdfContentExtractor
         this.parser = new PdfReaderContentParser(reader);
     }
 
+    public void close() {
+        reader.close();
+    }
+
     public int getNumberOfPages()
     {
         return reader.getNumberOfPages();
