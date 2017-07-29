@@ -3,61 +3,34 @@ package ru.icc.cells.tabbypdf.utils.content;
 import ru.icc.cells.tabbypdf.common.Rectangle;
 import ru.icc.cells.tabbypdf.common.Ruling;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Created by Андрей on 26.09.2016.
+ * @author aaltaev
+ * @since 0.1
  */
 public class PageLayoutAlgorithm
 {
-    public static List<Ruling>          rulings              = new ArrayList<>();
-    public static Comparator<Rectangle> RECTANGLE_COMPARATOR = (rect1, rect2) ->
-    {
-        if (rect1.getTop() > rect2.getTop())
-        {
-            return -1;
-        }
-        else if (rect1.getTop() == rect2.getTop())
-        {
-            if (rect1.getLeft() < rect2.getLeft())
-            {
-                return -1;
-            }
-            else if (rect1.getLeft() == rect2.getLeft())
-            {
-                return 0;
-            }
-        }
-        return 1;
-    };
+    public static final Comparator<Rectangle> RECTANGLE_COMPARATOR =
+            Comparator.comparing(Rectangle::getTop).reversed()
+                    .thenComparing(Rectangle::getLeft);
 
-    private static Comparator<Ruling> lineComparator = (line1, line2) ->
-    {
-        double x1  = line1.getStartLocation().getX();
-        double x2  = line2.getStartLocation().getX();
-        double yt1 = line1.getEndLocation().getY();
-        double yt2 = line2.getEndLocation().getY();
-        if (x1 < x2)
-        {
-            return -1;
+    public static final Comparator<Ruling> LINE_COMPARATOR =
+            Comparator.comparing((Ruling ruling) -> ruling.getStartLocation().getX()).reversed()
+                    .thenComparing((Ruling ruling) -> ruling.getEndLocation().getY()).reversed();
+
+    private static class Tuple<T> {
+        T left;
+        T right;
+
+        Tuple(T left, T right) {
+            this.left = left;
+            this.right = right;
         }
-        else if (x1 == x2)
-        {
-            if (yt1 > yt2)
-            {
-                return -1;
-            }
-            else if (yt1 == yt2)
-            {
-                return 0;
-            }
-        }
-        return 1;
-    };
+    }
+
 
     public static List<Rectangle> getAllGaps(List<? extends Rectangle> obstacles)
     {
@@ -88,10 +61,12 @@ public class PageLayoutAlgorithm
      */
     public static List<Rectangle> getVerticalGaps(List<? extends Rectangle> obstacles)
     {
-        Rectangle boundary = getBoundingRectangle(obstacles);
-        if (obstacles.size() == 0) return Collections.emptyList();
-        else if (obstacles.size() == 1)
-        {
+        if (obstacles.size() == 0) { // no gaps
+            return Collections.emptyList();
+        }
+
+        if (obstacles.size() == 1) { // only left & right gaps
+            Rectangle boundary = getBoundingRectangle(obstacles);
             List<Rectangle> gaps     = new ArrayList<>();
             Rectangle       obstacle = obstacles.get(0);
             gaps.add(new Rectangle(boundary.getLeft(), boundary.getBottom(), obstacle.getLeft(), obstacle.getTop()));
@@ -99,7 +74,109 @@ public class PageLayoutAlgorithm
             return gaps;
         }
 
-        rulings = new ArrayList<>();
+        return getGaps(findRulings(obstacles));
+    }
+
+    private static List<Rectangle> getGaps(Tuple<List<Ruling>> rulings) {
+        List<Rectangle> gaps = new ArrayList<>();
+        for (Iterator<Ruling> rightRulingsIterator = rulings.right.iterator(); rightRulingsIterator.hasNext(); ) {
+            Ruling rightRuling = rightRulingsIterator.next();
+            for (Iterator<Ruling> leftRulingsIterator = rulings.left.iterator(); leftRulingsIterator.hasNext(); ) {
+                Ruling leftRuling = leftRulingsIterator.next();
+                if (isRightRulingSameAsLeftRuling(leftRuling, rightRuling)
+                        && countRulingsBetweenLeftAndRight(leftRuling, rightRuling, rulings) == 0) {
+                    gaps.add(
+                            new Rectangle(
+                                    (float) rightRuling.getEndLocation().getX(),
+                                    (float) rightRuling.getStartLocation().getY(),
+                                    (float) leftRuling.getStartLocation().getX(),
+                                    (float) leftRuling.getEndLocation().getY()
+                            )
+                    );
+                    rightRulingsIterator.remove();
+                    leftRulingsIterator.remove();
+                    break;
+                }
+            }
+        }
+        return gaps;
+    }
+
+    private static long countRulingsBetweenLeftAndRight(Ruling left, Ruling right, Tuple<List<Ruling>> rulings) {
+        List<Ruling> allRulings = new ArrayList<>(rulings.left);
+        allRulings.addAll(rulings.right);
+        allRulings.remove(right);
+        allRulings.remove(left);
+        return allRulings.stream()
+                .filter(ruling -> (ruling.getStartLocation().getX() >= right.getEndLocation().getX() &&
+                        ruling.getStartLocation().getX() <= left.getEndLocation().getX()) &&
+                        ((ruling.getStartLocation().getY() <= left.getEndLocation().getY() &&
+                                ruling.getStartLocation().getY() >= left.getStartLocation().getY()) ||
+                                (ruling.getEndLocation().getY() <= left.getEndLocation().getY() &&
+                                        ruling.getEndLocation().getY() >= left.getStartLocation().getY())))
+                .count();
+    }
+
+    private static boolean isRightRulingSameAsLeftRuling(Ruling left, Ruling right) {
+        double xRight = right.getEndLocation().getX();
+        double yTopRight = right.getEndLocation().getY();
+        double yBtmRight = right.getStartLocation().getY();
+        double xLeft = left.getEndLocation().getX();
+        double yTopLeft = left.getEndLocation().getY();
+        double yBtmLeft = left.getStartLocation().getY();
+        return xRight < xLeft && yTopRight == yTopLeft && yBtmRight == yBtmLeft;
+    }
+
+    private static Rectangle getBoundingRectangle(List<? extends Rectangle> obstacles) {
+        return new Rectangle(
+                getMin(obstacles, Rectangle::getLeft) - 10,
+                getMin(obstacles, Rectangle::getBottom),
+                getMax(obstacles, Rectangle::getRight) + 10,
+                getMax(obstacles, Rectangle::getTop)
+        );
+    }
+
+    private static Tuple<List<Ruling>> findRulings(List<? extends Rectangle> obstacles) {
+        Rectangle boundary = getBoundingRectangle(obstacles);
+        List<Rectangle> preparedObstacles = getPreparedObstacles(obstacles);
+
+        List<Ruling> leftRulings = new ArrayList<>();
+        List<Ruling> rightRulings = new ArrayList<>();
+
+        // iterate through rectangles from top to bottom (excluding the upper & lower rectangles)
+        for (int i = 1; i < preparedObstacles.size() - 1; i++) {
+            Rectangle currentRect = preparedObstacles.get(i);
+            Tuple<Float> top = findUpperRulingsCoordinates(i, preparedObstacles);
+            Tuple<Float> btm = findLowerRulingsCoordinates(i, preparedObstacles);
+            if (top != null && btm != null) {
+                Ruling leftRuling = new Ruling(currentRect.getLeft(), btm.left, currentRect.getLeft(), top.left);
+                Ruling rightRuling = new Ruling(currentRect.getRight(), btm.right, currentRect.getRight(), top.right);
+                if (!leftRulings.contains(leftRuling)) {
+                    leftRulings.add(leftRuling);
+                }
+                if (!rightRulings.contains(rightRuling)) {
+                    rightRulings.add(rightRuling);
+                }
+            }
+        }
+        Ruling leftRuling = new Ruling(boundary.getLeft(), boundary.getBottom(), boundary.getLeft(), boundary.getTop());
+        Ruling rightRuling =
+                new Ruling(boundary.getRight(), boundary.getBottom(), boundary.getRight(), boundary.getTop());
+        leftRulings.add(rightRuling);
+        rightRulings.add(leftRuling);
+        leftRulings.sort(LINE_COMPARATOR);
+        rightRulings.sort(LINE_COMPARATOR);
+//        List<Ruling> rulings = new ArrayList<>();
+//        rulings.addAll(leftRulings);
+//        rulings.addAll(rightRulings);
+        return new Tuple<>(leftRulings, rightRulings);
+    }
+
+    /**
+     * Creates sorted list of obstacles with top and bottom boundary rectangles
+     */
+    private static List<Rectangle> getPreparedObstacles(List<? extends Rectangle> obstacles) {
+        Rectangle boundary = getBoundingRectangle(obstacles);
         Rectangle rTop = new Rectangle(boundary.getLeft(), boundary.getTop(), boundary.getRight(), boundary.getTop());
         Rectangle rBtm =
                 new Rectangle(boundary.getLeft(), boundary.getBottom(), boundary.getRight(), boundary.getBottom());
@@ -108,123 +185,70 @@ public class PageLayoutAlgorithm
         r.addAll(obstacles);
         r.add(rBtm);
         r.sort(RECTANGLE_COMPARATOR);
-
-        List<Ruling> leftRulings  = new ArrayList<>();
-        List<Ruling> rightRulings = new ArrayList<>();
-        for (int i = 1; i < r.size() - 1; i++)
-        {
-            Float yTopLeft = null, yTopRight = null, yBtmLeft = null, yBtmRight = null;
-            for (int j = i - 1; j >= 0; j--)
-            {
-                if (r.get(i).getTop() <= r.get(j).getBottom())
-                {
-                    if (yTopLeft == null && r.get(j).getLeft() < r.get(i).getLeft() &&
-                        r.get(i).getLeft() < r.get(j).getRight())
-                    {
-                        yTopLeft = r.get(j).getBottom();
-                    }
-
-                    if (yTopRight == null && r.get(j).getLeft() < r.get(i).getRight() &&
-                        r.get(i).getRight() < r.get(j).getRight())
-                    {
-                        yTopRight = r.get(j).getBottom();
-                    }
-                    if (yTopLeft != null && yTopRight != null) break;
-                }
-            }
-            for (int j = i + 1; j < r.size(); j++)
-            {
-                if (r.get(i).getBottom() >= r.get(j).getTop())
-                {
-                    if (yBtmLeft == null && r.get(j).getLeft() < r.get(i).getLeft() &&
-                        r.get(i).getLeft() < r.get(j).getRight())
-                    {
-                        yBtmLeft = r.get(j).getTop();
-                    }
-                }
-
-                if (yBtmRight == null && r.get(j).getLeft() < r.get(i).getRight() &&
-                    r.get(i).getRight() < r.get(j).getRight())
-                {
-                    yBtmRight = r.get(j).getTop();
-                }
-                if (yBtmLeft != null && yBtmRight != null) break;
-            }
-            Ruling leftRuling  = new Ruling(r.get(i).getLeft(),
-                                            yBtmLeft,
-                                            r.get(i).getLeft(),
-                                            yTopLeft);
-            Ruling rightRuling = new Ruling(r.get(i).getRight(),
-                                            yBtmRight,
-                                            r.get(i).getRight(),
-                                            yTopRight);
-            if (!leftRulings.contains(leftRuling))
-            {
-                leftRulings.add(leftRuling);
-            }
-            if (!rightRulings.contains(rightRuling))
-            {
-                rightRulings.add(rightRuling);
-            }
-        }
-        Ruling leftRuling = new Ruling(boundary.getLeft(), boundary.getBottom(), boundary.getLeft(), boundary.getTop());
-        Ruling rightRuling =
-                new Ruling(boundary.getRight(), boundary.getBottom(), boundary.getRight(), boundary.getTop());
-        leftRulings.add(rightRuling);
-        rightRulings.add(leftRuling);
-        leftRulings.sort(lineComparator);
-        rightRulings.sort(lineComparator);
-
-        rulings.addAll(leftRulings);
-        rulings.addAll(rightRulings);
-
-        List<Rectangle> gaps = new ArrayList<>();
-        for (int i = 0; i < rightRulings.size(); i++)
-        {
-            double xRight    = rightRulings.get(i).getEndLocation().getX();
-            double yTopRight = rightRulings.get(i).getEndLocation().getY();
-            double yBtmRight = rightRulings.get(i).getStartLocation().getY();
-            for (int j = 0; j < leftRulings.size(); j++)
-            {
-                double xLeft    = leftRulings.get(j).getEndLocation().getX();
-                double yTopLeft = leftRulings.get(j).getEndLocation().getY();
-                double yBtmLeft = leftRulings.get(j).getStartLocation().getY();
-                if (xRight < xLeft && yTopRight == yTopLeft && yBtmRight == yBtmLeft)
-                {
-                    List<Ruling> allRulings = new ArrayList<>(leftRulings);
-                    allRulings.addAll(rightRulings);
-                    allRulings.remove(rightRulings.get(i));
-                    allRulings.remove(leftRulings.get(j));
-                    long count = allRulings.stream()
-                                           .filter(ruling -> (ruling.getStartLocation().getX() >= xRight &&
-                                                              ruling.getStartLocation().getX() <= xLeft) &&
-                                                             ((ruling.getStartLocation().getY() <= yTopLeft &&
-                                                               ruling.getStartLocation().getY() >= yBtmLeft) ||
-                                                              (ruling.getEndLocation().getY() <= yTopLeft &&
-                                                               ruling.getEndLocation().getY() >= yBtmLeft)))
-                                           .count();
-                    double right = leftRulings.get(j).getStartLocation().getX();
-                    if (count == 0)
-                    {
-                        Rectangle gap =
-                                new Rectangle((float) xRight, (float) yBtmRight, (float) right, (float) yTopLeft);
-                        gaps.add(gap);
-                        rightRulings.remove(i--);
-                        leftRulings.remove(j);
-                        break;
-                    }
-                }
-            }
-        }
-        return gaps;
+        return r;
     }
 
-    private static Rectangle getBoundingRectangle(List<? extends Rectangle> obstacles)
-    {
-        Float left   = obstacles.stream().map(Rectangle::getLeft).min(Float::compare).orElse(0f) - 10;
-        Float bottom = obstacles.stream().map(Rectangle::getBottom).min(Float::compare).orElse(0f);
-        Float right  = obstacles.stream().map(Rectangle::getRight).max(Float::compare).orElse(0f) + 10;
-        Float top    = obstacles.stream().map(Rectangle::getTop).max(Float::compare).orElse(0f);
-        return new Rectangle(left, bottom, right, top);
+    private static Tuple<Float> findUpperRulingsCoordinates(int currentRulingIndex, List<Rectangle> rectangles) {
+        Rectangle currentRect = rectangles.get(currentRulingIndex);
+        Float yTopLeft = null, yTopRight = null;
+        for (int j = currentRulingIndex - 1; j >= 0; j--) {
+            Rectangle upperRect = rectangles.get(j);
+            if (currentRect.getTop() <= upperRect.getBottom()) { // upperRect is really upper then currentRect
+                if (yTopLeft == null && projectionsIntersectAndTopIsOnTheLeft(upperRect, currentRect)) {
+                    yTopLeft = upperRect.getBottom();
+                }
+                if (yTopRight == null && projectionsIntersectAndTopIsOnTheRight(upperRect, currentRect)) {
+                    yTopRight = upperRect.getBottom();
+                }
+                if (yTopLeft != null && yTopRight != null) {  // found upper rulings coordinates
+                    return new Tuple<>(yTopLeft, yTopRight);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Tuple<Float> findLowerRulingsCoordinates(int currentRulingIndex, List<Rectangle> rectangles) {
+        Rectangle currentRect = rectangles.get(currentRulingIndex);
+        Float yBtmLeft = null, yBtmRight = null;
+        for (int j = currentRulingIndex + 1; j < rectangles.size(); j++) {
+            Rectangle lowerRect = rectangles.get(j);
+            if (currentRect.getBottom() >= lowerRect.getTop()) { // lowerRect is really lower then currentRect
+                if (yBtmLeft == null && projectionsIntersectAndBottomIsOnTheLeft(currentRect, lowerRect)) {
+                    yBtmLeft = lowerRect.getTop();
+                }
+                if (yBtmRight == null && projectionsIntersectAndBottomIsOnTheRight(currentRect, lowerRect)) {
+                    yBtmRight = lowerRect.getTop();
+                }
+            }
+            if (yBtmLeft != null && yBtmRight != null) { // found lower rulings coordinates
+                return new Tuple<>(yBtmLeft, yBtmRight);
+            }
+        }
+        return null;
+    }
+
+    private static boolean projectionsIntersectAndTopIsOnTheLeft(Rectangle top, Rectangle bottom) {
+        return top.getLeft() < bottom.getLeft() && bottom.getLeft() < top.getRight();
+    }
+
+    private static boolean projectionsIntersectAndTopIsOnTheRight(Rectangle top, Rectangle bottom) {
+        return top.getLeft() < bottom.getRight() && bottom.getRight() < top.getRight();
+    }
+
+    private static boolean projectionsIntersectAndBottomIsOnTheLeft(Rectangle top, Rectangle bottom) {
+        return bottom.getLeft() < top.getLeft() && top.getLeft() < bottom.getRight();
+    }
+
+    private static boolean projectionsIntersectAndBottomIsOnTheRight(Rectangle top, Rectangle bottom) {
+        return bottom.getLeft() < top.getRight() && top.getRight() < bottom.getRight();
+    }
+
+    private static float getMin(List<? extends Rectangle> rectangles, Function<Rectangle, Float> mapper) {
+        return rectangles.stream().map(mapper).min(Float::compare).orElse(0f);
+    }
+
+    private static float getMax(List<? extends Rectangle> rectangles, Function<Rectangle, Float> mapper) {
+        return rectangles.stream().map(mapper).max(Float::compare).orElse(0f);
     }
 }
