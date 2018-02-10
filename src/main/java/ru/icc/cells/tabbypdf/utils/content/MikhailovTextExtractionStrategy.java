@@ -1,6 +1,8 @@
 package ru.icc.cells.tabbypdf.utils.content;
 
+import com.itextpdf.text.pdf.DocumentFont;
 import com.itextpdf.text.pdf.parser.*;
+import ru.icc.cells.tabbypdf.common.FontCharacteristics;
 import ru.icc.cells.tabbypdf.common.TextChunk;
 
 import java.util.*;
@@ -101,7 +103,6 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy
             btmSegment = btmSegment.transformBy(riseOffsetTransform);
             topSegment = topSegment.transformBy(riseOffsetTransform);
         }
-        TextChunk location;
         float     left, bottom, right, top;
         if (rotation == 90)
         {  //transform chunk coordinates according to rotation angle
@@ -131,11 +132,40 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy
             top = bottom;
             bottom = tmp;
         }
-        location = new TextChunk(renderInfo.getText(), left, bottom, right, top, renderInfo.getSingleSpaceWidth());
+
+        FontCharacteristics.Builder builder = FontCharacteristics.newBuilder();
+
         GraphicsState gs = ReflectionIText.getGs(renderInfo);
-        location.setChunkFont(gs.getFont());
-        location.setFontSize(gs.getFontSize());
-        return location;
+        if (gs != null) {
+            boolean bold = false;
+            boolean italic = false;
+            StringBuilder fontFamily = new StringBuilder();
+
+            if (gs.getFont() != null) {
+                DocumentFont font = gs.getFont();
+                for (String[] fontNameArray : font.getFamilyFontName()) {
+                    if (fontNameArray.length == 4) {
+                        fontFamily.append(fontNameArray[3].split("[-,]")[0]).append(" ");
+                    }
+                    for (String fontName : fontNameArray) {
+                        if (fontName.toLowerCase().contains("bold")) {
+                            bold = true;
+                        }
+                        if (fontName.toLowerCase().contains("italic")) {
+                            italic = true;
+                        }
+                    }
+                }
+
+            }
+
+            builder.setSize(gs.getFontSize())
+                    .setForceBold(bold)
+                    .setItalic(italic)
+                    .setFontFamily(fontFamily.toString());
+        }
+
+        return new TextChunk(renderInfo.getText(), left, bottom, right, top, builder.build());
     }
 
     public interface TextChunkFilter
@@ -312,10 +342,9 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy
                 right = previousChunk.getRight();
                 top = previousChunk.getTop();
                 lr.append(previousChunk.getText());
-                TextChunk newChunk =
-                        new TextChunk(lr.toString(), left, bottom, right, top, previousChunk.getCharSpaceWidth());
-                newChunk.setChunkFont(previousChunk.getChunkFont());
-                locationalWordResult.add(newChunk);
+                locationalWordResult.add(
+                        new TextChunk(lr.toString(), left, bottom, right, top, previousChunk.getFontCharacteristics())
+                );
 
                 left = null;
                 bottom = null;
@@ -332,8 +361,7 @@ public class MikhailovTextExtractionStrategy implements TextExtractionStrategy
 
             lr.append(chunk.getText());
             TextChunk newChunk =
-                    new TextChunk(lr.toString(), left, bottom, right, top, previousChunk.getCharSpaceWidth());
-            newChunk.setChunkFont(chunk.getChunkFont());
+                    new TextChunk(lr.toString(), left, bottom, right, top, previousChunk.getFontCharacteristics());
             locationalWordResult.add(newChunk);
         }
         else

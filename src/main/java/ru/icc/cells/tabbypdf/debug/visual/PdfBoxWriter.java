@@ -90,7 +90,7 @@ public class PdfBoxWriter implements PdfWriter, Closeable
         {
             contentStream.beginText();
             contentStream.newLineAtOffset(x, y);
-            contentStream.setFont(PDType1Font.HELVETICA, 8);
+            contentStream.setFont(PDType1Font.HELVETICA, 4);
             contentStream.showText(text);
             contentStream.endText();
         }
@@ -123,8 +123,12 @@ public class PdfBoxWriter implements PdfWriter, Closeable
         {
             for (T rect : rects)
             {
-                contentStream.addRect(rect.getLeft(), rect.getBottom(), Math.abs(rect.getRight() - rect.getLeft()),
-                                      Math.abs(rect.getTop() - rect.getBottom()));
+                contentStream.addRect(
+                        rect.getLeft(),
+                        rect.getBottom(),
+                        Math.abs(rect.getRight() - rect.getLeft()),
+                        Math.abs(rect.getTop() - rect.getBottom())
+                );
                 contentStream.stroke();
             }
         }

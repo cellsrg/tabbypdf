@@ -1,6 +1,6 @@
 package ru.icc.cells.tabbypdf.common;
 
-import com.itextpdf.awt.geom.Point2D;
+import java.awt.geom.Point2D;
 
 /**
  * Simple ruling, represented by 2 points: start and end locations

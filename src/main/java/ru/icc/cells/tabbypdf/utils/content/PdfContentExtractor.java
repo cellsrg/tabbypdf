@@ -1,6 +1,5 @@
 package ru.icc.cells.tabbypdf.utils.content;
 
-import com.itextpdf.awt.geom.Point2D;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
@@ -8,6 +7,7 @@ import ru.icc.cells.tabbypdf.common.Page;
 import ru.icc.cells.tabbypdf.common.Ruling;
 import ru.icc.cells.tabbypdf.common.TextChunk;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -49,9 +49,9 @@ public class PdfContentExtractor
     {
         pageNumber++;
         Rectangle pageBound = reader.getPageSize(pageNumber);
-        return new Page(pageBound.getLeft(), pageBound.getBottom(), pageBound.getRight(), pageBound.getTop(),
+        return new Page(pageBound.getLeft(), pageBound.getBottom(), pageBound.getRight(), pageBound.getTop(), 0,
                         getChunks(pageNumber), getCharacterChunks(pageNumber), getWordChunks(pageNumber),
-                        getRulings(pageNumber), getImageRegions(pageNumber), getMapping(pageNumber));
+                        getRulings(pageNumber), getImageRegions(pageNumber));
     }
 
     public List<TextChunk> getWordChunks(int pageNumber) throws IOException
@@ -75,19 +75,18 @@ public class PdfContentExtractor
         return processTextContent(pageNumber).getResultantText();
     }
 
-    private Map<TextChunk,List<TextChunk>> getMapping(int pageNumber) throws IOException
-    {
-        return processTextContent(pageNumber).getOriginalCharacterChunksMapping();
-    }
-
     public List<Ruling> getRulings(int pageNumber) throws IOException
     {
         MikhailovExtRenderListener extRenderListener = processGraphicContent(pageNumber);
         List<Ruling> lines = extRenderListener.getAllLines()
-                                              .stream()
-                                              .map(line -> new Ruling(line.getBasePoints().get(0),
-                                                                      line.getBasePoints().get(1)))
-                                              .collect(Collectors.toList());
+                .stream()
+                .map(line -> new Ruling(
+                        (float) line.getBasePoints().get(0).getX(),
+                        (float) line.getBasePoints().get(0).getY(),
+                        (float) line.getBasePoints().get(1).getX(),
+                        (float) line.getBasePoints().get(1).getY()
+                ))
+                .collect(Collectors.toList());
 
         lines.addAll(extRenderListener.getAllRectangles()
                                       .stream()

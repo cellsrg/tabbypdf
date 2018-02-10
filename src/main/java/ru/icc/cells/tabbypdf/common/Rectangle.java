@@ -97,4 +97,33 @@ public class Rectangle
                                       other.getRight() - other.getLeft(), other.getTop() - other.getBottom());
         return thisRect.intersects(otherRect);
     }
+
+    public void rotate(int rotation, float pageHeight, float pageWidth) {
+        switch (rotation) {
+            case 270:
+                rotate(pageHeight);
+                // fall through
+            case 180:
+                rotate(pageWidth);
+                // fall through
+            case 90:
+                rotate(pageHeight);
+                // fall through
+            case 0:
+                break;
+            default:
+                throw new IllegalArgumentException("Rotation should be 0, 90, 180 or 270");
+        }
+    }
+
+    private void rotate(float height) {
+        float old = bottom;
+        bottom = left;
+        left = height - old;
+
+        old = right;
+        right = height - top;
+        top = old;
+
+    }
 }
