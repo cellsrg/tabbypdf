@@ -49,9 +49,16 @@ public class PdfContentExtractor
     {
         pageNumber++;
         Rectangle pageBound = reader.getPageSize(pageNumber);
+        MikhailovTextExtractionStrategy strategy = processTextContent(pageNumber);
+
         return new Page(pageBound.getLeft(), pageBound.getBottom(), pageBound.getRight(), pageBound.getTop(),
-                        getChunks(pageNumber), getCharacterChunks(pageNumber), getWordChunks(pageNumber),
-                        getRulings(pageNumber), getImageRegions(pageNumber), getMapping(pageNumber));
+                strategy.getLocationalChunkResult(),
+                strategy.getLocationalResult(),
+                strategy.getResultantWordLocation((MikhailovTextExtractionStrategy.TextChunkFilter) null),
+                getRulings(pageNumber),
+                getImageRegions(pageNumber),
+                strategy.getOriginalCharacterChunksMapping()
+        );
     }
 
     public List<TextChunk> getWordChunks(int pageNumber) throws IOException
