@@ -3,7 +3,7 @@ package ru.icc.cells.tabbypdf.exceptions;
 /**
  * @author aaltaev
  */
-public class TableExtractionException extends Exception {
+public class TableExtractionException extends RuntimeException {
 	/**
 	 *
 	 */

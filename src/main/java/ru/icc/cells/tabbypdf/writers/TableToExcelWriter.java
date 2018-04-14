@@ -27,7 +27,7 @@ public class TableToExcelWriter implements Writer<Table, XSSFWorkbook> {
 
     private void addSheet(List<Table> tables, XSSFWorkbook workbook, Integer tableNum) {
         XSSFSheet sheet = workbook.createSheet(tableNum.toString());
-        List<Row> rows  = tables.get(tableNum).getRows();
+        List<Row> rows = tables.get(tableNum).getRows();
         for (int rowNum = 0; rowNum < rows.size(); rowNum++) {
             addRow(sheet, rows, rowNum);
         }
@@ -36,8 +36,8 @@ public class TableToExcelWriter implements Writer<Table, XSSFWorkbook> {
     private void addRow(XSSFSheet sheet, List<Row> rows, int rowNum) {
         XSSFRow excelRow = sheet.createRow(rowNum);
         List<Cell> cells = rows.get(rowNum).getCells();
-        for (int cellNum = 0; cellNum < cells.size(); cellNum++) {
-            addCell(excelRow, cells.get(cellNum));
+        for (Cell cell : cells) {
+            addCell(excelRow, cell);
         }
     }
 

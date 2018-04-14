@@ -1,24 +1,17 @@
 package ru.icc.cells.tabbypdf.common;
 
-import com.itextpdf.text.pdf.DocumentFont;
+import lombok.Data;
 
 /**
  * Rectangular area containing text and font characteristics
  */
-public class TextChunk extends RectangularTextContainer implements Comparable<TextChunk>
-{
+@Data
+public class TextChunk extends RectangularTextContainer implements Comparable<TextChunk> {
+    public static final String DIAGNOSTICS_FORMAT = "Text (@%f, %f -> %f, %f): %s";
     /**
      * the text of the chunk
      */
-    private       String       text;
-    /**
-     * the width of a single space character in the font of the chunk
-     */
-    private final float        charSpaceWidth;
-    /**
-     * the font of the chunk text
-     */
-    private       DocumentFont font;
+    private String text;
     /**
      * the size of the font of the chunk text
      */
@@ -26,71 +19,28 @@ public class TextChunk extends RectangularTextContainer implements Comparable<Te
 
     private FontCharacteristics fontCharacteristics;
 
-    public TextChunk(
-            String string, float left, float bottom, float right, float top, FontCharacteristics fontCharacteristics
+    public TextChunk(String string, double left, double bottom, double right, double top,
+                     FontCharacteristics fontCharacteristics
     ) {
         super(left, bottom, right, top);
         this.text = string;
-        this.charSpaceWidth = fontCharacteristics.getSpaceWidth();
         this.fontCharacteristics = fontCharacteristics;
         this.fontSize = fontCharacteristics.getSize();
-    }
-
-    public FontCharacteristics getFontCharacteristics() {
-        return fontCharacteristics;
-    }
-
-    public void setChunkFont(DocumentFont font)
-    {
-        this.font = font;
-    }
-
-    public DocumentFont getChunkFont()
-    {
-        return this.font;
-    }
-
-    public float getFontSize()
-    {
-        return fontSize;
-    }
-
-    public void setFontSize(float fontSize)
-    {
-        this.fontSize = fontSize;
-    }
-
-    public void setText(String text)
-    {
-        this.text = text;
-    }
-
-    @Override
-    public String getText()
-    {
-        return text;
-    }
-
-    public float getCharSpaceWidth()
-    {
-        return charSpaceWidth;
     }
 
     /**
      * Used for debugging
      */
-    public void printDiagnostics()
-    {
-        System.out.println(
-                "Text (@" + getLeft() + "," + getBottom() + " -> " + getRight() + "," + getBottom() + "): " + text);
+    public void printDiagnostics() {
+        System.out.println(String.format(DIAGNOSTICS_FORMAT, getLeft(), getBottom(), getRight(), getBottom(), text));
     }
 
     /**
      * Checks whether this chunk is at the same horizontal line with other chunk
+     *
      * @param as other chunk
      */
-    public boolean sameLine(TextChunk as)
-    {
+    public boolean sameLine(TextChunk as) {
         return this.getTop() == as.getTop() || this.getBottom() == as.getBottom();
     }
 
@@ -99,14 +49,12 @@ public class TextChunk extends RectangularTextContainer implements Comparable<Te
      * @param other other chunk
      * @return distance from end of other chunk
      */
-    public float distanceFromEndOf(TextChunk other)
-    {
+    public double distanceFromEndOf(TextChunk other) {
         return getLeft() - other.getRight();
     }
 
     @Override
-    public int compareTo(TextChunk rhs)
-    {
+    public int compareTo(TextChunk rhs) {
         if (this == rhs || this.equals(rhs)) {
             return 0;
         }

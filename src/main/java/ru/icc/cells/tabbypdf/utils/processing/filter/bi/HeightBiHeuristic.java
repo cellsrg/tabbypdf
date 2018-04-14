@@ -4,35 +4,32 @@ import ru.icc.cells.tabbypdf.common.Rectangle;
 import ru.icc.cells.tabbypdf.common.TextBlock;
 import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
 
-public class HeightBiHeuristic extends BiHeuristic<Rectangle>
-{
+public class HeightBiHeuristic extends BiHeuristic<Rectangle> {
     private float heightMultiplier;
 
-    public HeightBiHeuristic()
-    {
+    public HeightBiHeuristic() {
         this(1f);
     }
 
-    public HeightBiHeuristic(float heightMultiplier)
-    {
+    public HeightBiHeuristic(float heightMultiplier) {
         super(Heuristic.Orientation.VERTICAL);
         this.heightMultiplier = heightMultiplier;
     }
 
     @Override
-    public boolean test(Rectangle first, Rectangle second)
-    {
-        float height;
-        if (second.getClass().equals(TextBlock.class))
-        {
+    public boolean test(Rectangle first, Rectangle second) {
+        double height;
+        if (second.getClass().equals(TextBlock.class)) {
             height = (second.getTop() - ((TextBlock) second).getChunks().get(0).getBottom()) * heightMultiplier;
-        }
-        else
-        {
+        } else {
             height = (Math.abs(second.getTop() - second.getBottom()) * heightMultiplier);
         }
-        float distance =
-                Math.abs(((first.getTop() > second.getTop()) ? first.getBottom() : first.getTop()) - second.getTop());
+        double distance = Math.abs(
+            (first.getTop() > second.getTop()
+                ? first.getBottom()
+                : first.getTop()
+            ) - second.getTop()
+        );
         return distance <= height;
     }
 }

@@ -1,14 +1,10 @@
 package ru.icc.cells.tabbypdf.common;
 
-public abstract class RectangularTextContainer extends Rectangle implements TextContainer
-{
-    public RectangularTextContainer()
-    {
-        super();
-    }
+import lombok.NoArgsConstructor;
 
-    public RectangularTextContainer(float left, float bottom, float right, float top)
-    {
+@NoArgsConstructor
+public abstract class RectangularTextContainer extends Rectangle implements TextContainer {
+    public RectangularTextContainer(double left, double bottom, double right, double top) {
         super(left, bottom, right, top);
     }
 }

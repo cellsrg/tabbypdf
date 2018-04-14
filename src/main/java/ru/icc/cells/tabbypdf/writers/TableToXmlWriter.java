@@ -1,5 +1,6 @@
 package ru.icc.cells.tabbypdf.writers;
 
+import lombok.AllArgsConstructor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import ru.icc.cells.tabbypdf.common.table.Cell;
@@ -8,7 +9,10 @@ import ru.icc.cells.tabbypdf.common.table.Table;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
@@ -17,27 +21,27 @@ import java.util.List;
 /**
  * Created by Андрей on 19.11.2016.
  */
+@AllArgsConstructor
 public class TableToXmlWriter implements Writer<Table, String> {
 
     private String fileName;
 
-    public TableToXmlWriter(String fileName) {
-        this.fileName = fileName;
-    }
-
     @Override
-    public String write(List<Table> tables)
-            throws ParserConfigurationException, TransformerException {
-        DocumentBuilderFactory  docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+    public String write(List<Table> tables) {
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder        docBuilder = null;
+        try {
+            docBuilder = docFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException();
+        }
 
-        Document doc         = docBuilder.newDocument();
-        Element  rootElement = doc.createElement("document");
+        Document doc = docBuilder.newDocument();
+        Element rootElement = doc.createElement("document");
         rootElement.setAttribute("filename", fileName);
         doc.appendChild(rootElement);
 
-        for (int i = 0; i < tables.size(); i++)
-        {
+        for (int i = 0; i < tables.size(); i++) {
             Table table = tables.get(i);
 
             Element tableElement = doc.createElement("table");
@@ -49,13 +53,11 @@ public class TableToXmlWriter implements Writer<Table, String> {
             regionElement.setAttribute("id", "1");
             regionElement.setAttribute("page", String.valueOf(table.getPageNumber() + 1));
 
-            for (int j = 0; j < table.getRowsSize(); j++)
-            {
+            for (int j = 0; j < table.getRowsSize(); j++) {
                 List<Cell> cells = table.getRow(j).getCells();
                 int id = 1;
-                for (int k = 0; k < cells.size(); k++,id++)
-                {
-                    Cell    cell        = cells.get(k);
+                for (int k = 0; k < cells.size(); k++, id++) {
+                    Cell cell = cells.get(k);
                     Element cellElement = doc.createElement("cell");
                     cellElement.setAttribute("id", String.valueOf(id));
                     cellElement.setAttribute("start-col", String.valueOf(cell.getId()));
@@ -71,7 +73,7 @@ public class TableToXmlWriter implements Writer<Table, String> {
                     cellElement.appendChild(cellBoxElement);
 
                     Element cellContentElement = doc.createElement("content");
-                    cellContentElement.appendChild(doc.createTextNode(cell.getText()+"  "));
+                    cellContentElement.appendChild(doc.createTextNode(cell.getText() + "  "));
                     cellElement.appendChild(cellContentElement);
 
                     regionElement.appendChild(cellElement);
@@ -81,14 +83,18 @@ public class TableToXmlWriter implements Writer<Table, String> {
             rootElement.appendChild(tableElement);
         }
 
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer        transformer        = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        DOMSource    source = new DOMSource(doc);
-        StringWriter writer = new StringWriter();
+        try {
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(doc);
+            StringWriter writer = new StringWriter();
 
-        transformer.transform(source, new StreamResult(writer));
-        return writer.getBuffer().toString();
+            transformer.transform(source, new StreamResult(writer));
+            return writer.getBuffer().toString();
+        } catch (TransformerException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

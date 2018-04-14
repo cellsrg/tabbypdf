@@ -1,47 +1,32 @@
 package ru.icc.cells.tabbypdf.common;
 
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 /**
  * @author aaltaev
  */
+@Getter
+@EqualsAndHashCode
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FontCharacteristics {
-    private final static int ALL_CAP      = 0b000000001;
-    private final static int FIXED_PITCH  = 0b000000010;
-    private final static int FORCE_BOLD   = 0b000000100;
-    private final static int ITALIC       = 0b000001000;
+    private final static int ALL_CAP = 0b000000001;
+    private final static int FIXED_PITCH = 0b000000010;
+    private final static int FORCE_BOLD = 0b000000100;
+    private final static int ITALIC = 0b000001000;
     private final static int NON_SYMBOLIC = 0b000010000;
-    private final static int SCRIPT       = 0b000100000;
-    private final static int SERIF        = 0b001000000;
-    private final static int SMALL_CAP    = 0b010000000;
-    private final static int SYMBOLIC     = 0b100000000;
+    private final static int SCRIPT = 0b000100000;
+    private final static int SERIF = 0b001000000;
+    private final static int SMALL_CAP = 0b010000000;
+    private final static int SYMBOLIC = 0b100000000;
 
-    private int flags;
-
+    private int    flags;
     private String fontName;
     private String fontFamily;
     private float  size;
     private float  spaceWidth;
-
-    private FontCharacteristics(){}
-
-    public float getSize() {
-        return size;
-    }
-
-    public String getFontName() {
-        return fontName;
-    }
-
-    public String getFontFamily() {
-        return fontFamily;
-    }
-
-    public float getSpaceWidth() {
-        return spaceWidth;
-    }
-
-    public int getFlags() {
-        return flags;
-    }
 
     public boolean isAllCap() {
         return (flags & ALL_CAP) == ALL_CAP;
@@ -79,47 +64,25 @@ public class FontCharacteristics {
         return (flags & SYMBOLIC) == SYMBOLIC;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        FontCharacteristics that = (FontCharacteristics) o;
-
-        if (flags != that.flags) {
-            return false;
-        }
-        if (Float.compare(that.size, size) != 0) {
-
-            return false;
-        }
-        if (Float.compare(that.spaceWidth, spaceWidth) != 0) {
-            return false;
-        }
-        if (fontName != null ? !fontName.equals(that.fontName) : that.fontName != null) {
-            return false;
-        }
-        return fontFamily != null ? fontFamily.equals(that.fontFamily) : that.fontFamily == null;
-    }
-
     public static Builder newBuilder() {
         return new FontCharacteristics().new Builder();
     }
 
+    public FontCharacteristics copy() {
+        FontCharacteristics copy = new FontCharacteristics();
+        copy.flags = this.flags;
+        copy.fontName = this.fontName;
+        copy.fontFamily = this.fontFamily;
+        copy.size = this.size;
+        return copy;
+    }
+
     public class Builder {
-        private Builder(){}
+        private Builder() {
+        }
 
         public FontCharacteristics build() {
-            FontCharacteristics copy = new FontCharacteristics();
-            copy.flags = FontCharacteristics.this.flags;
-            copy.fontName = FontCharacteristics.this.fontName;
-            copy.fontFamily = FontCharacteristics.this.fontFamily;
-            copy.size = FontCharacteristics.this.size;
-            return copy;
+            return FontCharacteristics.this.copy();
         }
 
         public Builder setFontName(String fontName) {

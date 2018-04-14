@@ -1,5 +1,6 @@
 package ru.icc.cells.tabbypdf.pdfbox;
 
+import lombok.Getter;
 import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -18,9 +19,10 @@ import java.util.List;
 /**
  * Created by Андрей on 25.11.2017.
  */
+@Getter
 class PdfBoxGraphicsExtractor extends PDFGraphicsStreamEngine {
 
-    private final List<Ruling> rulings = new ArrayList<>();
+    private final List<Ruling>    rulings      = new ArrayList<>();
     private final List<Rectangle> imageRegions = new ArrayList<>();
 
     private float x, y;
@@ -42,21 +44,13 @@ class PdfBoxGraphicsExtractor extends PDFGraphicsStreamEngine {
         }
     }
 
-    public List<Ruling> getRulings() {
-        return rulings;
-    }
-
-    public List<Rectangle> getImageRegions() {
-        return imageRegions;
-    }
-
     @Override
     public void appendRectangle(Point2D p0, Point2D p1, Point2D p2, Point2D p3) throws IOException {
         rulings.addAll(Arrays.asList(
-                new Ruling(p1, p2),
-                new Ruling(p0, p1),
-                new Ruling(p2, p3),
-                new Ruling(p3, p0)
+            new Ruling(p1, p2),
+            new Ruling(p0, p1),
+            new Ruling(p2, p3),
+            new Ruling(p3, p0)
         ));
     }
 
@@ -69,10 +63,10 @@ class PdfBoxGraphicsExtractor extends PDFGraphicsStreamEngine {
         Rectangle2D imageShape = at.createTransformedShape(new Rectangle2D.Float(0, 0, 1, 1)).getBounds2D();
 
         imageRegions.add(new Rectangle(
-                (float) imageShape.getX(),
-                (float) imageShape.getY(),
-                (float) (imageShape.getX() + imageShape.getWidth()),
-                (float) (imageShape.getY() + imageShape.getHeight())
+            imageShape.getX(),
+            imageShape.getY(),
+            (imageShape.getX() + imageShape.getWidth()),
+            (imageShape.getY() + imageShape.getHeight())
         ));
     }
 
@@ -90,7 +84,8 @@ class PdfBoxGraphicsExtractor extends PDFGraphicsStreamEngine {
     }
 
     @Override
-    public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) throws IOException {}
+    public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) throws IOException {
+    }
 
     @Override
     public Point2D getCurrentPoint() throws IOException {
@@ -98,17 +93,30 @@ class PdfBoxGraphicsExtractor extends PDFGraphicsStreamEngine {
     }
 
     @Override
-    public void clip(int windingRule) throws IOException {}
+    public void clip(int windingRule) throws IOException {
+    }
+
     @Override
-    public void closePath() throws IOException {}
+    public void closePath() throws IOException {
+    }
+
     @Override
-    public void endPath() throws IOException {}
+    public void endPath() throws IOException {
+    }
+
     @Override
-    public void strokePath() throws IOException {}
+    public void strokePath() throws IOException {
+    }
+
     @Override
-    public void fillPath(int windingRule) throws IOException {}
+    public void fillPath(int windingRule) throws IOException {
+    }
+
     @Override
-    public void fillAndStrokePath(int windingRule) throws IOException {}
+    public void fillAndStrokePath(int windingRule) throws IOException {
+    }
+
     @Override
-    public void shadingFill(COSName shadingName) throws IOException {}
+    public void shadingFill(COSName shadingName) throws IOException {
+    }
 }

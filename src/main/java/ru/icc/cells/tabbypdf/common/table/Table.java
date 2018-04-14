@@ -1,30 +1,29 @@
 package ru.icc.cells.tabbypdf.common.table;
 
+import lombok.Getter;
+import lombok.Setter;
 import ru.icc.cells.tabbypdf.common.Rectangle;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Table extends Rectangle
-{
+@Getter
+public class Table extends Rectangle {
+    @Setter
     private int pageNumber;
+    private int rowsSize;
+    private int columnsSize;
 
     private final List<Row> rows = new ArrayList<>();
 
-    private int rowsSize = 0, columnsSize = 0;
-
-    public Table(float left, float bottom, float right, float top)
-    {
+    public Table(double left, double bottom, double right, double top) {
         super(left, bottom, right, top);
     }
 
-    public void addCell(Cell cell, int rowId)
-    {
-        if (rows.size() < rowId + 1)
-        {
-            for (int i = rows.size(); i < rowId + 1; i++)
-            {
+    public void addCell(Cell cell, int rowId) {
+        if (rows.size() < rowId + 1) {
+            for (int i = rows.size(); i < rowId + 1; i++) {
                 rows.add(new Row(rowId));
                 rowsSize++;
             }
@@ -32,55 +31,23 @@ public class Table extends Rectangle
         rows.get(rowId).addCell(cell);
 
         columnsSize = rows.stream()
-                          .map(row -> row.getCells()
-                                         .stream()
-                                         .map(Cell::getColumnWidth)
-                                         .reduce(Integer::sum)
-                                         .orElse(0))
-                          .max(Integer::compare)
-                          .orElse(0);
+            .mapToInt(row -> row.getCells().stream().mapToInt(Cell::getColumnWidth).sum())
+            .max()
+            .orElse(0);
     }
 
-    public int getRowsSize()
-    {
-        return rowsSize;
-    }
-
-    public int getColumnsSize()
-    {
-        return columnsSize;
-    }
-
-    public List<Row> getRows() {
-        return rows;
-    }
-
-    public Row getRow(int rowNumber)
-    {
+    public Row getRow(int rowNumber) {
         return rows.get(rowNumber);
     }
 
-    public List<Cell> getColumn(int columnNumber)
-    {
+    public List<Cell> getColumn(int columnNumber) {
         List<Cell> columnCells = new ArrayList<>();
-        for (Row row : rows)
-        {
+        for (Row row : rows) {
             columnCells.addAll(row.getCells()
-                                  .stream()
-                                  .filter(cell -> columnNumber >= cell.getId() &&
-                                                  columnNumber < cell.getId() + cell.getColumnWidth())
-                                  .collect(Collectors.toList()));
+                .stream()
+                .filter(cell -> columnNumber >= cell.getId() && columnNumber < cell.getId() + cell.getColumnWidth())
+                .collect(Collectors.toList()));
         }
         return columnCells;
-    }
-
-    public int getPageNumber()
-    {
-        return pageNumber;
-    }
-
-    public void setPageNumber(int pageNumber)
-    {
-        this.pageNumber = pageNumber;
     }
 }

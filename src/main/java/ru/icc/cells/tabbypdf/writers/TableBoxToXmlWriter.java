@@ -1,5 +1,6 @@
 package ru.icc.cells.tabbypdf.writers;
 
+import lombok.AllArgsConstructor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import ru.icc.cells.tabbypdf.common.TableBox;
@@ -7,32 +8,35 @@ import ru.icc.cells.tabbypdf.common.TableBox;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
 import java.util.List;
 
-public class TableBoxToXmlWriter implements Writer<TableBox, String>
-{
+@AllArgsConstructor
+public class TableBoxToXmlWriter implements Writer<TableBox, String> {
     private String fileName;
 
-    public TableBoxToXmlWriter(String fileName) {
-        this.fileName = fileName;
-    }
-
     @Override
-    public String write(List<TableBox> tables) throws TransformerException, ParserConfigurationException {
+    public String write(List<TableBox> tables) {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder        docBuilder = docFactory.newDocumentBuilder();
+        DocumentBuilder docBuilder = null;
+        try {
+            docBuilder = docFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
 
-        Document doc         = docBuilder.newDocument();
-        Element  rootElement = doc.createElement("document");
+        Document doc = docBuilder.newDocument();
+        Element rootElement = doc.createElement("document");
         rootElement.setAttribute("filename", fileName);
         doc.appendChild(rootElement);
 
-        for (int i = 0; i < tables.size(); i++)
-        {
+        for (int i = 0; i < tables.size(); i++) {
             TableBox tableBox = tables.get(i);
 
             Element table = doc.createElement("table");
@@ -53,14 +57,16 @@ public class TableBoxToXmlWriter implements Writer<TableBox, String>
             rootElement.appendChild(table);
         }
 
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer        transformer        = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        DOMSource          source             = new DOMSource(doc);
-        StringWriter stringWriter = new StringWriter();
-        transformer.transform(source, new StreamResult(stringWriter));
-        String result = stringWriter.getBuffer().toString().replaceAll("\n|\r", "");
-
-        return result;
+        try {
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(doc);
+            StringWriter stringWriter = new StringWriter();
+            transformer.transform(source, new StreamResult(stringWriter));
+            return stringWriter.getBuffer().toString().replaceAll("[\n\r]", "");
+        } catch (TransformerException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
