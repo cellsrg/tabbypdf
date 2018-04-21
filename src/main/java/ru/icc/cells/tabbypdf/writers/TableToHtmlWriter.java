@@ -32,12 +32,12 @@ public class TableToHtmlWriter implements Writer<Table, List<String>> {
     public String write(Table table) {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder        docBuilder = null;
-        Document               doc        = docBuilder.newDocument();
         try {
             docBuilder = docFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
         }
+        Document doc = docBuilder.newDocument();
 
         Element root = doc.createElement("table");
         root.setAttribute("border", "1px solid black");

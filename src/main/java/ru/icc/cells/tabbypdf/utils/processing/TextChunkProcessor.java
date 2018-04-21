@@ -82,7 +82,7 @@ public class TextChunkProcessor {
         for (TextBlock chunk = chunkIterator.next(); chunkIterator.hasNext(); chunk = chunkIterator.next()) {
             String chunkText = chunk.getText();
             for (String strToReplace : cnf.getStringsToReplace()) {
-                if (!strToReplace.equals(" ")) {
+                if (!strToReplace.equals(" ") && !chunkText.equals(" ")) {
                     chunkText = chunkText.replaceAll(strToReplace, "");
                 }
             }
@@ -139,7 +139,7 @@ public class TextChunkProcessor {
             TextBlock firstBlock = blocks.get(i);
             TextBlock secondBlock = blocks.get(i + 1);
             String text = firstBlock.getChunks().get(0).getText();
-            text = (isVertical ? "\n" : " ") + text;
+            text = (isVertical ? "\n" : "") + text;
             firstBlock.getChunks().get(0).setText(text);
             textBlock.add(firstBlock);
 

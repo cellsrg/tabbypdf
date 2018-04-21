@@ -26,7 +26,7 @@ public class Rectangle {
         left   = Double.min(this.left, other.getLeft());
         bottom = Double.min(this.bottom, other.getBottom());
         right  = Double.max(this.right, other.getRight());
-        top  = Double.max(this.top, other.getTop());
+        top    = Double.max(this.top, other.getTop());
     }
 
     /**

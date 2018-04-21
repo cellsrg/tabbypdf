@@ -4,6 +4,9 @@ import ru.icc.cells.tabbypdf.common.Rectangle;
 import ru.icc.cells.tabbypdf.common.TextBlock;
 import ru.icc.cells.tabbypdf.common.TextChunk;
 
+/**
+ * Проверка на то, первый чанк находится левее второго и что их вертикальные проекции пересекаются.
+ */
 public class HorizontalPositionBiHeuristic extends BiHeuristic<Rectangle> {
 
     public HorizontalPositionBiHeuristic() {

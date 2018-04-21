@@ -40,7 +40,7 @@ public class PdfBoxDataExtractor extends PDFTextStripper {
         }
     }
 
-    /* Координата 0,0 расположена в левом нижнем углу */
+    /* Координата 0,0 расположена в левом верхнем углу */
 
     private final File               file;
     private final List<TextPosition> textPositions = new ArrayList<>();
@@ -62,21 +62,29 @@ public class PdfBoxDataExtractor extends PDFTextStripper {
                 List<List<TextPosition>> chunks = new ArrayList<>();
 
                 TextPosition previous = null;
-                for (TextPosition textPosition : textPositions) {
+                for (TextPosition current : textPositions) {
                     if (previous == null) {
-                        previous = textPosition;
+                        chunk.add(current);
+                        previous = current;
                         continue;
                     }
 
-                    chunk.add(previous);
-
-                    if ((hasSpaceBetweenTextPositions(textPosition, previous) && !previous.getUnicode().equals("•"))
-                        || !sameLine(textPosition, previous) || previous.getUnicode().equals(" ")
+                    if ((hasSpaceBetweenTextPositions(current, previous) && !current.getUnicode().equals("•"))
+                        || !sameLine(current, previous) || current.getUnicode().equals(" ")
                     ) {
+                        if (!chunk.isEmpty()) {
+                            chunks.add(chunk);
+                        }
+                        chunk = new ArrayList<>();
+                    }
+
+                    chunk.add(current);
+                    if (current.getUnicode().equals(" ")) {
                         chunks.add(chunk);
                         chunk = new ArrayList<>();
                     }
-                    previous = textPosition;
+
+                    previous = current;
                 }
 
                 if (!textPositions.isEmpty()) {
@@ -90,11 +98,11 @@ public class PdfBoxDataExtractor extends PDFTextStripper {
 
                 final List<TextChunk> originChunks = textPositions.stream()
                     .map(tPos -> new TextChunk(
-                        tPos.getUnicode().trim(),
+                        tPos.getUnicode(),
                         tPos.getX(),
                         mediaBox.getHeight() - tPos.getY(),
                         tPos.getX() + tPos.getWidth(),
-                        mediaBox.getHeight() - (tPos.getY() + tPos.getHeight()),
+                        mediaBox.getHeight() - tPos.getY() + tPos.getHeight(),
                         buildFontCharacteristics(tPos.getFont(), tPos.getFontSize(), tPos.getWidthOfSpace())
                     ))
                     .collect(Collectors.toList());
@@ -107,7 +115,6 @@ public class PdfBoxDataExtractor extends PDFTextStripper {
 
                         String text = word.stream()
                             .map(TextPosition::getUnicode)
-                            .map(String::trim)
                             .collect(Collectors.joining());
                         float spaceWidth = (float) word.stream()
                             .mapToDouble(TextPosition::getWidthOfSpace)
@@ -119,7 +126,7 @@ public class PdfBoxDataExtractor extends PDFTextStripper {
                             first.getX(),
                             mediaBox.getHeight() - first.getY(),
                             last.getX() + last.getWidth(),
-                            mediaBox.getHeight() - (last.getY() + last.getHeight()),
+                            mediaBox.getHeight() - last.getY() + last.getHeight(),
                             buildFontCharacteristics(last.getFont(), last.getFontSize(), spaceWidth)
                         );
                     })

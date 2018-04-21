@@ -74,6 +74,7 @@ public class FontCharacteristics {
         copy.fontName = this.fontName;
         copy.fontFamily = this.fontFamily;
         copy.size = this.size;
+        copy.spaceWidth = this.spaceWidth;
         return copy;
     }
 
