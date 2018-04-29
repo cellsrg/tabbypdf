@@ -1,7 +1,7 @@
 package ru.icc.cells.tabbypdf.utils.processing.filter.bi;
 
 import lombok.Getter;
-import ru.icc.cells.tabbypdf.common.Rectangle;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
 import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
 
 import java.lang.reflect.ParameterizedType;

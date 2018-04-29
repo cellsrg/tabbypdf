@@ -1,6 +1,6 @@
 package ru.icc.cells.tabbypdf.utils.processing.filter.tri;
 
-import ru.icc.cells.tabbypdf.common.Rectangle;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
 
 public class CutInBeforeTriHeuristic extends TriHeuristic<Rectangle> {
 

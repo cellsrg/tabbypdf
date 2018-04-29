@@ -1,6 +1,6 @@
 package ru.icc.cells.tabbypdf.utils.processing.filter.bi;
 
-import ru.icc.cells.tabbypdf.common.Rectangle;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
 
 public class VerticalPositionBiHeuristic extends BiHeuristic<Rectangle> {
     public VerticalPositionBiHeuristic() {

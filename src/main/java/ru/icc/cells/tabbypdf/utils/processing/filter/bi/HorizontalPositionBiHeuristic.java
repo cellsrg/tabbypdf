@@ -1,8 +1,8 @@
 package ru.icc.cells.tabbypdf.utils.processing.filter.bi;
 
-import ru.icc.cells.tabbypdf.common.Rectangle;
-import ru.icc.cells.tabbypdf.common.TextBlock;
-import ru.icc.cells.tabbypdf.common.TextChunk;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
+import ru.icc.cells.tabbypdf.entities.TextBlock;
+import ru.icc.cells.tabbypdf.entities.TextChunk;
 
 /**
  * Проверка на то, первый чанк находится левее второго и что их вертикальные проекции пересекаются.

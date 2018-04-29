@@ -1,9 +1,9 @@
 package ru.icc.cells.tabbypdf.utils.processing;
 
-import ru.icc.cells.tabbypdf.common.Page;
-import ru.icc.cells.tabbypdf.common.Rectangle;
-import ru.icc.cells.tabbypdf.common.TextBlock;
-import ru.icc.cells.tabbypdf.common.TextChunk;
+import ru.icc.cells.tabbypdf.entities.Page;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
+import ru.icc.cells.tabbypdf.entities.TextBlock;
+import ru.icc.cells.tabbypdf.entities.TextChunk;
 import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
 import ru.icc.cells.tabbypdf.utils.processing.filter.bi.BiHeuristic;
 import ru.icc.cells.tabbypdf.utils.processing.filter.bi.HorizontalPositionBiHeuristic;
@@ -138,9 +138,9 @@ public class TextChunkProcessor {
             }
             TextBlock firstBlock = blocks.get(i);
             TextBlock secondBlock = blocks.get(i + 1);
-            String text = firstBlock.getChunks().get(0).getText();
-            text = (isVertical ? "\n" : "") + text;
-            firstBlock.getChunks().get(0).setText(text);
+            String text = firstBlock.getChunks().get(firstBlock.getChunks().size() - 1).getText();
+            text = text + (isVertical ? "\n" : " ");
+            firstBlock.getChunks().get(firstBlock.getChunks().size() - 1).setText(text);
             textBlock.add(firstBlock);
 
             for (BiHeuristic biHeuristic : biHeuristics) {

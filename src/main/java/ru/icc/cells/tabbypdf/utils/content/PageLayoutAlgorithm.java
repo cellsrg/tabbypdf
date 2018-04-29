@@ -1,7 +1,7 @@
 package ru.icc.cells.tabbypdf.utils.content;
 
-import ru.icc.cells.tabbypdf.common.Rectangle;
-import ru.icc.cells.tabbypdf.common.Ruling;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
+import ru.icc.cells.tabbypdf.entities.Ruling;
 
 import java.util.ArrayList;
 import java.util.Collections;

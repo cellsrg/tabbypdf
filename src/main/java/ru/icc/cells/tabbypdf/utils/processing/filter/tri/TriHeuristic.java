@@ -1,7 +1,7 @@
 package ru.icc.cells.tabbypdf.utils.processing.filter.tri;
 
 import lombok.Getter;
-import ru.icc.cells.tabbypdf.common.Rectangle;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
 import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
 
 @Getter

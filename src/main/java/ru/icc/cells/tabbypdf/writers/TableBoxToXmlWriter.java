@@ -3,7 +3,7 @@ package ru.icc.cells.tabbypdf.writers;
 import lombok.AllArgsConstructor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import ru.icc.cells.tabbypdf.common.TableBox;
+import ru.icc.cells.tabbypdf.entities.TableBox;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

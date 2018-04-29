@@ -1,13 +1,13 @@
 package ru.icc.cells.tabbypdf;
 
-import ru.icc.cells.tabbypdf.common.Page;
-import ru.icc.cells.tabbypdf.common.TableBox;
-import ru.icc.cells.tabbypdf.common.TableRegion;
-import ru.icc.cells.tabbypdf.common.TextLine;
-import ru.icc.cells.tabbypdf.common.table.Table;
+import ru.icc.cells.tabbypdf.entities.Page;
+import ru.icc.cells.tabbypdf.entities.TableBox;
+import ru.icc.cells.tabbypdf.entities.TableRegion;
+import ru.icc.cells.tabbypdf.entities.TextLine;
+import ru.icc.cells.tabbypdf.entities.table.Table;
 import ru.icc.cells.tabbypdf.debug.Debug;
-import ru.icc.cells.tabbypdf.pdfbox.PdfBoxDataExtractor;
-import ru.icc.cells.tabbypdf.recognizers.TableOptimizer;
+import ru.icc.cells.tabbypdf.extraction.PdfDataExtractor;
+import ru.icc.cells.tabbypdf.recognition.TableOptimizer;
 import ru.icc.cells.tabbypdf.writers.TableBoxToXmlWriter;
 import ru.icc.cells.tabbypdf.writers.TableToHtmlWriter;
 import ru.icc.cells.tabbypdf.writers.TableToXmlWriter;
@@ -43,7 +43,7 @@ public class Example {
         List<Table> tables = new ArrayList<>();
 
         try {
-            List<Page> pages = new PdfBoxDataExtractor.Factory().getPdfBoxTextExtractor(file).getPageContent();
+            List<Page> pages = new PdfDataExtractor.Factory().getPdfBoxTextExtractor(file).getPageContent();
 
             for (int pageNumber = 0; pageNumber < pages.size(); pageNumber++) {
                 Debug.setPage(pageNumber);

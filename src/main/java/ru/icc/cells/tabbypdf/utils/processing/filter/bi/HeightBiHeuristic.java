@@ -1,17 +1,17 @@
 package ru.icc.cells.tabbypdf.utils.processing.filter.bi;
 
-import ru.icc.cells.tabbypdf.common.Rectangle;
-import ru.icc.cells.tabbypdf.common.TextBlock;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
+import ru.icc.cells.tabbypdf.entities.TextBlock;
 import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
 
 public class HeightBiHeuristic extends BiHeuristic<Rectangle> {
-    private float heightMultiplier;
+    private double heightMultiplier;
 
     public HeightBiHeuristic() {
         this(1f);
     }
 
-    public HeightBiHeuristic(float heightMultiplier) {
+    public HeightBiHeuristic(double heightMultiplier) {
         super(Heuristic.Orientation.VERTICAL);
         this.heightMultiplier = heightMultiplier;
     }

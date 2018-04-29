@@ -1,19 +1,19 @@
 package ru.icc.cells.tabbypdf.utils.processing.filter.bi;
 
-import ru.icc.cells.tabbypdf.common.Rectangle;
-import ru.icc.cells.tabbypdf.common.TextBlock;
-import ru.icc.cells.tabbypdf.common.TextChunk;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
+import ru.icc.cells.tabbypdf.entities.TextBlock;
+import ru.icc.cells.tabbypdf.entities.TextChunk;
 import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
 
 public class SpaceWidthBiFilter extends BiHeuristic<Rectangle> {
-    private float spaceWidthMultiplier;
+    private double  spaceWidthMultiplier;
     private boolean enableListCheck;
 
     public SpaceWidthBiFilter() {
         this(1f, false);
     }
 
-    public SpaceWidthBiFilter(float spaceWidthMultiplier, boolean enableListCheck) {
+    public SpaceWidthBiFilter(double spaceWidthMultiplier, boolean enableListCheck) {
         super(Heuristic.Orientation.HORIZONTAL);
         this.spaceWidthMultiplier = spaceWidthMultiplier;
         this.enableListCheck = enableListCheck;
@@ -44,7 +44,11 @@ public class SpaceWidthBiFilter extends BiHeuristic<Rectangle> {
             return true;
         }
 
-        return (sc.getLeft() - fc.getRight() <= fc.getFontCharacteristics().getSpaceWidth() * spaceWidthMultiplier)
+        double spaceWidth = Double.max(
+            fc.getFontCharacteristics().getSpaceWidth(),
+            sc.getFontCharacteristics().getSpaceWidth()
+        );
+        return (sc.getLeft() - fc.getRight() <= spaceWidth * spaceWidthMultiplier)
             || (enableListCheck && isList);
     }
 }

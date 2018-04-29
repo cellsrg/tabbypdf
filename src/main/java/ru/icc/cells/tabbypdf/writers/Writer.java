@@ -1,6 +1,6 @@
 package ru.icc.cells.tabbypdf.writers;
 
-import ru.icc.cells.tabbypdf.common.Rectangle;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
 
 import java.util.List;
 

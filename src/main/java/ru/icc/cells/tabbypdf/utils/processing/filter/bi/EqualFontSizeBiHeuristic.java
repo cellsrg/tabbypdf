@@ -1,7 +1,7 @@
 package ru.icc.cells.tabbypdf.utils.processing.filter.bi;
 
-import ru.icc.cells.tabbypdf.common.TextBlock;
-import ru.icc.cells.tabbypdf.common.TextChunk;
+import ru.icc.cells.tabbypdf.entities.TextBlock;
+import ru.icc.cells.tabbypdf.entities.TextChunk;
 
 public class EqualFontSizeBiHeuristic extends BiHeuristic<TextBlock> {
     public EqualFontSizeBiHeuristic() {

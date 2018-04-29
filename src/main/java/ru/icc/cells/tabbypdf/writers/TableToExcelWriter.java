@@ -4,9 +4,9 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import ru.icc.cells.tabbypdf.common.table.Cell;
-import ru.icc.cells.tabbypdf.common.table.Row;
-import ru.icc.cells.tabbypdf.common.table.Table;
+import ru.icc.cells.tabbypdf.entities.table.Cell;
+import ru.icc.cells.tabbypdf.entities.table.Row;
+import ru.icc.cells.tabbypdf.entities.table.Table;
 
 import java.util.List;
 

@@ -4,16 +4,16 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import ru.icc.cells.tabbypdf.common.Page;
-import ru.icc.cells.tabbypdf.common.TableBox;
-import ru.icc.cells.tabbypdf.common.TextBlock;
-import ru.icc.cells.tabbypdf.common.table.Table;
-import ru.icc.cells.tabbypdf.detectors.TableDetector;
-import ru.icc.cells.tabbypdf.detectors.TableDetectorConfiguration;
+import ru.icc.cells.tabbypdf.detection.TableDetector;
+import ru.icc.cells.tabbypdf.detection.TableDetectorConfiguration;
+import ru.icc.cells.tabbypdf.entities.Page;
+import ru.icc.cells.tabbypdf.entities.TableBox;
+import ru.icc.cells.tabbypdf.entities.TextBlock;
+import ru.icc.cells.tabbypdf.entities.table.Table;
 import ru.icc.cells.tabbypdf.exceptions.EmptyArgumentException;
-import ru.icc.cells.tabbypdf.pdfbox.PdfBoxDataExtractor;
-import ru.icc.cells.tabbypdf.recognizers.SimpleTableRecognizer;
-import ru.icc.cells.tabbypdf.recognizers.TableOptimizer;
+import ru.icc.cells.tabbypdf.extraction.PdfDataExtractor;
+import ru.icc.cells.tabbypdf.recognition.SimpleTableRecognizer;
+import ru.icc.cells.tabbypdf.recognition.TableOptimizer;
 import ru.icc.cells.tabbypdf.utils.processing.TextChunkProcessor;
 import ru.icc.cells.tabbypdf.utils.processing.TextChunkProcessorConfiguration;
 import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
@@ -22,7 +22,6 @@ import ru.icc.cells.tabbypdf.utils.processing.filter.bi.EqualFontFamilyBiHeurist
 import ru.icc.cells.tabbypdf.utils.processing.filter.bi.EqualFontSizeBiHeuristic;
 import ru.icc.cells.tabbypdf.utils.processing.filter.bi.HeightBiHeuristic;
 import ru.icc.cells.tabbypdf.utils.processing.filter.bi.HorizontalPositionBiHeuristic;
-import ru.icc.cells.tabbypdf.utils.processing.filter.bi.LinesBetweenChunksBiHeuristic;
 import ru.icc.cells.tabbypdf.utils.processing.filter.bi.SpaceWidthBiFilter;
 import ru.icc.cells.tabbypdf.utils.processing.filter.bi.VerticalPositionBiHeuristic;
 import ru.icc.cells.tabbypdf.utils.processing.filter.tri.CutInAfterTriHeuristic;
@@ -127,7 +126,7 @@ public class App {
     }
 
     public void extract() {
-        List<Page> pages = new PdfBoxDataExtractor.Factory().getPdfBoxTextExtractor(file).getPageContent();
+        List<Page> pages = new PdfDataExtractor.Factory().getPdfBoxTextExtractor(file).getPageContent();
 
         List<TableBox> tableBoxes = new ArrayList<>();
         List<Table> tables = new ArrayList<>();
@@ -153,8 +152,7 @@ public class App {
     }
 
     public static List<TableBox> findTables(Page page) {
-        TextChunkProcessorConfiguration configuration =
-            getDetectionConfiguration().addFilter(new LinesBetweenChunksBiHeuristic(page.getRulings()));
+        TextChunkProcessorConfiguration configuration = getDetectionConfiguration();
         List<TextBlock> textBlocks = new TextChunkProcessor(page, configuration).process();
 
         TableDetectorConfiguration cnf = new TableDetectorConfiguration()
@@ -173,7 +171,7 @@ public class App {
     public static TextChunkProcessorConfiguration getDetectionConfiguration() {
         return new TextChunkProcessorConfiguration()
             /*VERTICAL FILTERS*/.addFilter(new HorizontalPositionBiHeuristic())
-            .addFilter(new SpaceWidthBiFilter().enableListCheck(true))
+            .addFilter(new SpaceWidthBiFilter(2, true))
             /*HORIZONTAL FILTERS*/
             .addFilter(new VerticalPositionBiHeuristic())
             .addFilter(new HeightBiHeuristic())
@@ -191,8 +189,7 @@ public class App {
 
     public static Table recognizeTable(Page page, TableBox pageTableBox) {
         Page region = page.getRegion(pageTableBox);
-        TextChunkProcessorConfiguration recognitionConfig =
-            getRecognizingConfiguration().addFilter(new LinesBetweenChunksBiHeuristic(page.getRulings()));
+        TextChunkProcessorConfiguration recognitionConfig = getRecognizingConfiguration();
         SimpleTableRecognizer recognizer = new SimpleTableRecognizer(recognitionConfig);
         return recognizer.recognize(region);
     }
@@ -200,7 +197,7 @@ public class App {
     public static TextChunkProcessorConfiguration getRecognizingConfiguration() {
         return new TextChunkProcessorConfiguration()
             /*VERTICAL FILTERS*/.addFilter(new HorizontalPositionBiHeuristic())
-            .addFilter(new SpaceWidthBiFilter().enableListCheck(false))
+            .addFilter(new SpaceWidthBiFilter(2, true).enableListCheck(false))
             /*HORIZONTAL FILTERS*/
             .addFilter(new VerticalPositionBiHeuristic())
             .addFilter(new HeightBiHeuristic())

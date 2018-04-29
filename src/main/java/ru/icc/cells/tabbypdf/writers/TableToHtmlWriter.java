@@ -2,9 +2,9 @@ package ru.icc.cells.tabbypdf.writers;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import ru.icc.cells.tabbypdf.common.table.Cell;
-import ru.icc.cells.tabbypdf.common.table.Row;
-import ru.icc.cells.tabbypdf.common.table.Table;
+import ru.icc.cells.tabbypdf.entities.table.Cell;
+import ru.icc.cells.tabbypdf.entities.table.Row;
+import ru.icc.cells.tabbypdf.entities.table.Table;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
