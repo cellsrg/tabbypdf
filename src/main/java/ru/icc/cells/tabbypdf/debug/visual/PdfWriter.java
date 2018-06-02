@@ -1,15 +1,14 @@
 package ru.icc.cells.tabbypdf.debug.visual;
 
-import ru.icc.cells.tabbypdf.common.Ruling;
-import ru.icc.cells.tabbypdf.common.Rectangle;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
+import ru.icc.cells.tabbypdf.entities.Ruling;
 
-import java.awt.*;
+import java.awt.Color;
 
 /**
  * Interface for pdf writer
  */
-public interface PdfWriter
-{
+public interface PdfWriter {
     /**
      * Set stroking color
      */
@@ -23,12 +22,13 @@ public interface PdfWriter
     /**
      * Draw rectangle
      */
-    <T extends ru.icc.cells.tabbypdf.common.Rectangle> void drawRect(T rect);
+    <T extends ru.icc.cells.tabbypdf.entities.Rectangle> void drawRect(T rect);
 
     <T extends Rectangle> void drawRects(java.util.List<T> rects);
 
     /**
      * Draw ruling
+     *
      * @param ruling
      */
     void drawRuling(Ruling ruling);

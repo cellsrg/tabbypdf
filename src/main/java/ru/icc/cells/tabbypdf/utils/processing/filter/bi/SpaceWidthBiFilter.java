@@ -1,75 +1,54 @@
 package ru.icc.cells.tabbypdf.utils.processing.filter.bi;
 
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Font;
-import ru.icc.cells.tabbypdf.common.Rectangle;
-import ru.icc.cells.tabbypdf.common.TextBlock;
-import ru.icc.cells.tabbypdf.common.TextChunk;
+import ru.icc.cells.tabbypdf.entities.Rectangle;
+import ru.icc.cells.tabbypdf.entities.TextBlock;
+import ru.icc.cells.tabbypdf.entities.TextChunk;
 import ru.icc.cells.tabbypdf.utils.processing.filter.Heuristic;
 
-public class SpaceWidthBiFilter extends BiHeuristic<Rectangle>
-{
-    private float   spaceWidthMultiplier;
+public class SpaceWidthBiFilter extends BiHeuristic<Rectangle> {
+    private double  spaceWidthMultiplier;
     private boolean enableListCheck;
 
-    public SpaceWidthBiFilter()
-    {
+    public SpaceWidthBiFilter() {
         this(1f, false);
     }
 
-    public SpaceWidthBiFilter(float spaceWidthMultiplier, boolean enableListCheck)
-    {
+    public SpaceWidthBiFilter(double spaceWidthMultiplier, boolean enableListCheck) {
         super(Heuristic.Orientation.HORIZONTAL);
         this.spaceWidthMultiplier = spaceWidthMultiplier;
-        enableListCheck = enableListCheck;
+        this.enableListCheck = enableListCheck;
     }
 
-    public SpaceWidthBiFilter enableListCheck(boolean value)
-    {
+    public SpaceWidthBiFilter enableListCheck(boolean value) {
         this.enableListCheck = value;
         return this;
     }
 
     @Override
-    public boolean test(Rectangle first, Rectangle second)
-    {
+    public boolean test(Rectangle first, Rectangle second) {
         TextChunk fc = null, sc = null;
-        boolean   isList;
-        if (first.getClass().equals(TextChunk.class) && second.getClass().equals(TextChunk.class))
-        {
+        boolean isList;
+        if (first.getClass().equals(TextChunk.class) && second.getClass().equals(TextChunk.class)) {
             fc = (TextChunk) first;
             sc = (TextChunk) second;
             isList = false;
-        }
-        else if (first.getClass().equals(TextBlock.class) && second.getClass().equals(TextBlock.class))
-        {
+        } else if (first.getClass().equals(TextBlock.class) && second.getClass().equals(TextBlock.class)) {
             fc = ((TextBlock) first).getChunks().get(((TextBlock) first).getChunks().size() - 1);
             sc = ((TextBlock) second).getChunks().get(0);
             isList = ((TextBlock) first).getText().matches("\\d+\\.\\s*");// example: '1. '
-        }
-        else
-        {
+        } else {
             return true;
         }
-        if (fc.getRight() >= sc.getLeft()) return true;
-        float spaceWidth;
-        if (fc.getText().contains(" "))
-        {
-            spaceWidth = fc.getCharSpaceWidth();
-            if (spaceWidth > 20)
-            {
-                spaceWidth = 20;
-            }
+
+        if (fc.getRight() >= sc.getLeft()) {
+            return true;
         }
-        else
-        {
-            spaceWidth = new Chunk(' ', new Font(fc.getChunkFont())).getWidthPoint();
-            if (spaceWidth == 0)
-            {
-                spaceWidth = 3;
-            }
-        }
-        float chunkDistance = sc.getLeft() - fc.getRight();
-        return (chunkDistance <= spaceWidth * spaceWidthMultiplier) || (enableListCheck && isList);
+
+        double spaceWidth = Double.max(
+            fc.getFontCharacteristics().getSpaceWidth(),
+            sc.getFontCharacteristics().getSpaceWidth()
+        );
+        return (sc.getLeft() - fc.getRight() <= spaceWidth * spaceWidthMultiplier)
+            || (enableListCheck && isList);
     }
 }
