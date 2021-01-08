@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.NoSuchElementException;
 
 /**
  * @author aaltaev
@@ -133,21 +134,25 @@ public class App {
         for (int pageNumber = 0; pageNumber < pages.size(); pageNumber++) {
             Page page = pages.get(pageNumber);
             List<TableBox> tableBoxesFromPage = findTables(page);
-
-            for (TableBox tableBox : tableBoxesFromPage) {
-                tableBox.setPageNumber(pageNumber);
-                for (TableBox pageTableBox : tableBoxesFromPage) {
-                    Table table = recognizeTable(page, pageTableBox);
-                    TableOptimizer optimizer = new TableOptimizer();
-                    optimizer.optimize(table);
-                    table.setPageNumber(pageNumber);
-                    tables.add(table);
+            try {
+                for (TableBox tableBox : tableBoxesFromPage) {
+                    tableBox.setPageNumber(pageNumber);
+                    for (TableBox pageTableBox : tableBoxesFromPage) {
+                        Table table = recognizeTable(page, pageTableBox);
+                        TableOptimizer optimizer = new TableOptimizer();
+                        optimizer.optimize(table);
+                        table.setPageNumber(pageNumber);
+                        tables.add(table);
+                    }
                 }
+
+                tableBoxes.addAll(tableBoxesFromPage);
+
+                extractedTables = tables;
+            }catch(NoSuchElementException e){
+
             }
 
-            tableBoxes.addAll(tableBoxesFromPage);
-
-            extractedTables = tables;
         }
     }
 
